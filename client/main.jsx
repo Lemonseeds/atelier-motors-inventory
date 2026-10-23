@@ -75,7 +75,7 @@ function VehicleDialog({ vehicle, onClose, onSave }) {
       <label className="form-span">Image URL<input type="url" value={form.imageUrl} onChange={(e) => update('imageUrl', e.target.value)} placeholder="https://example.com/vehicle.jpg" /></label>
       <label className="form-span">Description<textarea rows="3" maxLength="2000" value={form.description} onChange={(e) => update('description', e.target.value)} placeholder="What makes this vehicle special?" /></label>
       {error && <p className="form-error form-span" role="alert">{error}</p>}
-      <div className="form-span form-actions"><button type="button" className="button button-light" onClick={onClose}>Cancel</button><button disabled={busy} type="submit" className="button button-dark">{busy ? 'Saving…' : vehicle ? 'Save changes' : 'Add vehicle'} <ArrowRight size={17} /></button></div>
+      <div className="form-span flex items-center justify-end gap-3"><button type="button" className="button button-light" onClick={onClose}>Cancel</button><button disabled={busy} type="submit" className="button button-dark">{busy ? 'Saving…' : vehicle ? 'Save changes' : 'Add vehicle'} <ArrowRight size={17} /></button></div>
     </form>
   </Modal>;
 }

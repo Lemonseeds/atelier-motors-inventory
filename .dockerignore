@@ -1,0 +1,9 @@
+node_modules
+.npm-cache
+.git
+data
+client/dist
+docs/screenshots
+*.db
+*.db-shm
+*.db-wal
