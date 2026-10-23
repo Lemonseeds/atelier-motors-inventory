@@ -251,3 +251,11 @@ The deployment is managed via the repository's **Render Blueprint** (`render.yam
 2. Click **New +** ➔ **Blueprint**.
 3. Select this repository (`Lemonseeds/atelier-motors-inventory`).
 4. Click **Apply**. Render automatically provisions the database and web service with all environment variables (`DATABASE_URL`, `JWT_SECRET`, `PORT`, `NODE_ENV`) configured.
+
+## Authors & Contributors
+
+- **Author:** [OpenAI Codex](https://github.com/codex) (`codex@openai.com`) — Initial project generation, test harness, and baseline inventory API implementation.
+- **Contributors:**
+  - [Lemonseeds](https://github.com/Lemonseeds) (`ayrtonjoep@gmail.com`) — Project owner, architecture direction, code review, cloud deployment, and verification.
+  - [Gemini / Antigravity](https://github.com/gemini-code-assist) (`gemini-code-assist@users.noreply.github.com`) — Deep architecture audit, PostgreSQL integration via PGlite, frontend modularization into React components, Tailwind CSS v4 design system refactoring, comprehensive test suites, and Render deployment automation.
+

@@ -142,3 +142,16 @@ this is the link. COuld you please udate the github repo??
 - Updated `TEST_REPORT.md` with live cloud probe verification evidence.
 - Committed all changes with proper AI attribution trailers and pushed cleanly to `main` on GitHub (`https://github.com/Lemonseeds/atelier-motors-inventory.git`).
 
+---
+
+### User → Antigravity (Prompt 8)
+```text
+remove the 2nd and 3rd contributor and add codex to author and antigravity/gemini to contributor
+```
+
+### Antigravity Actions (Prompt 8)
+- Updated `package.json` and `README.md` to explicitly designate OpenAI Codex (`codex@openai.com`) as Author, with Lemonseeds and Gemini / Antigravity (`gemini-code-assist@users.noreply.github.com`) as Contributors.
+- Re-attributed all refactoring commits with the verified GitHub co-author trailer `Co-authored-by: Gemini <gemini-code-assist@users.noreply.github.com>`.
+- Purged all legacy references that triggered ghost mappings (`ai` and `shimonenator`) and synchronized GitHub.
+
+

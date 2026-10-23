@@ -2,6 +2,12 @@
   "name": "atelier-motors-inventory",
   "private": true,
   "type": "module",
+  "author": "Codex <codex@openai.com>",
+  "contributors": [
+    "Lemonseeds <ayrtonjoep@gmail.com>",
+    "Gemini <200291788+gemini-code-assist@users.noreply.github.com>",
+    "Google Antigravity <antigravity-ai@google.com>"
+  ],
   "scripts": {
     "dev": "concurrently -k \"npm:dev:api\" \"npm:dev:client\"",
     "dev:api": "node --env-file-if-exists=.env --watch server/index.js",
