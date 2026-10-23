@@ -8,7 +8,10 @@
     "dev:client": "vite --host 0.0.0.0",
     "build": "vite build",
     "start": "node --env-file-if-exists=.env server/index.js",
-    "test": "node --test \"server/**/*.test.js\"",
+    "test": "npm run test:server && npm run test:client",
+    "test:server": "node --test \"server/**/*.test.js\"",
+    "test:client": "vitest run",
+    "coverage:server": "node --test --experimental-test-coverage \"server/**/*.test.js\"",
     "check": "npm run test && npm run build"
   },
   "dependencies": {
@@ -22,10 +25,15 @@
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.11",
     "@tailwindcss/vite": "^4.1.14",
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.8",
     "@vitejs/plugin-react": "^5.0.4",
     "concurrently": "^9.2.1",
+    "jsdom": "^29.1.1",
     "supertest": "^7.1.4",
     "tailwindcss": "^4.1.14",
-    "vite": "^7.1.9"
+    "vite": "^7.1.9",
+    "vitest": "^3.2.7"
   }
 }
