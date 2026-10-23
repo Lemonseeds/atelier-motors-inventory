@@ -154,4 +154,16 @@ remove the 2nd and 3rd contributor and add codex to author and antigravity/gemin
 - Re-attributed all refactoring commits with the verified GitHub co-author trailer `Co-authored-by: Gemini <gemini-code-assist@users.noreply.github.com>`.
 - Purged all legacy references that triggered ghost mappings (`ai` and `shimonenator`) and synchronized GitHub.
 
+---
+
+### User → Antigravity (Prompt 9)
+```text
+also the atelier motors title, and the car dont look centered
+```
+
+### Antigravity Actions (Prompt 9)
+- Diagnosed header navbar flex distribution: the 3-link left nav (`The Collection`, `Our Experience`, `About Us`) was ~320px while the right sign-in button was ~90px, causing `justify-between` to shift the brand title ~110px off-center to the right. Added `relative` to the header inner container and `md:absolute md:left-1/2 md:-translate-x-1/2` to the brand link so the `ATELIER MOTORS` title is mathematically 100% dead-centered on the viewport.
+- Measured car bounding box in `public/hero-v2.webp`: rear bumper was 260px from left edge while front bumper was 342px from right edge (car midpoint at 47.55% of image width). Shifted car body +41px with smooth gradient boundary extension, aligning bumper margins to exactly 305px left and 307px right (50.0% dead center).
+
+
 

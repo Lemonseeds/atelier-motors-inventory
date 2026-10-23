@@ -194,7 +194,7 @@ export function App() {
     <>
       {/* Site Header */}
       <header className="absolute top-0 left-0 z-10 w-full">
-        <div className="mx-auto flex h-[76px] sm:h-[82px] w-[min(1400px,calc(100%-48px))] items-center justify-between border-b border-white/30 px-3 sm:px-7 text-white">
+        <div className="relative mx-auto flex h-[76px] sm:h-[82px] w-[min(1400px,calc(100%-48px))] items-center justify-between border-b border-white/30 px-3 sm:px-7 text-white">
           <nav
             className={`${
               mobileMenu ? 'flex' : 'hidden'
@@ -212,7 +212,11 @@ export function App() {
             </a>
           </nav>
 
-          <a href="#top" className="flex items-center gap-2 font-display text-base font-extrabold tracking-[.14em]" aria-label="Atelier Motors home">
+          <a
+            href="#top"
+            className="md:absolute md:left-1/2 md:-translate-x-1/2 flex items-center gap-2 font-display text-base font-extrabold tracking-[.14em]"
+            aria-label="Atelier Motors home"
+          >
             <span className="grid h-8 w-8 place-items-center rounded-full border border-current">
               <CarFront size={20} strokeWidth={1.5} />
             </span>
