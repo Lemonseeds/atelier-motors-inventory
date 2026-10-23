@@ -225,7 +225,7 @@ In strict accordance with the kata AI usage transparency guidelines:
    - Configuring the Render Blueprint (`render.yaml`).
 
 ### Co-Authorship Compliance
-Every commit assisted by AI includes the appropriate `Co-authored-by` trailer as specified in the kata guidelines (e.g., `Co-authored-by: Codex <AI@users.noreply.github.com>` and `Co-authored-by: Antigravity <AI@users.noreply.github.com>`).
+Every commit assisted by AI includes the appropriate `Co-authored-by` trailer as specified in the kata guidelines (e.g., `Co-authored-by: OpenAI Codex <codex@openai.com>` and `Co-authored-by: Gemini <gemini-code-assist@users.noreply.github.com>`).
 
 ### Reflection
 AI accelerated the speed of exploratory scaffolding, boilerplate generation, and asset creation. However, rigorous human-in-the-loop engineering was crucial:
