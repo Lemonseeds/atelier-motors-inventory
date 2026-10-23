@@ -1,5 +1,6 @@
 # Atelier Motors — Car Dealership Inventory System
 
+[![Live Demo](https://img.shields.io/badge/live%20demo-online-brightgreen)](https://atelier-motors-yaco.onrender.com/)
 [![CI Tests](https://img.shields.io/badge/tests-36%20passed-success)](TEST_REPORT.md)
 [![Coverage](https://img.shields.io/badge/backend%20coverage-98.2%25-brightgreen)](TEST_REPORT.md)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
@@ -8,6 +9,7 @@ A full-stack, test-driven car dealership inventory system with a calm, royal blu
 
 The application is engineered strictly following SOLID principles, complete separation of concerns, comprehensive input validation, and a verified Test-Driven Development (TDD) Red-Green-Refactor workflow.
 
+- **Live Deployed Application (Brownie Points):** [https://atelier-motors-yaco.onrender.com/](https://atelier-motors-yaco.onrender.com/)
 - **Public Repository:** [https://github.com/Lemonseeds/atelier-motors-inventory](https://github.com/Lemonseeds/atelier-motors-inventory)
 - **Test Evidence & Coverage:** [TEST_REPORT.md](TEST_REPORT.md)
 - **Raw AI Chat Logs & Prompts:** [PROMPTS.md](PROMPTS.md)
@@ -236,12 +238,16 @@ Raw prompt exchanges and conversation logs are preserved verbatim in [PROMPTS.md
 
 ## Cloud Deployment (Brownie Points)
 
-The project includes a ready-to-deploy **Render Blueprint** (`render.yaml`) that provisions both:
-1. A **Free Web Service** running Node.js with automated build and restart.
-2. A **Free Managed PostgreSQL Database** providing durable cloud persistence.
+- **Live Application URL:** [https://atelier-motors-yaco.onrender.com/](https://atelier-motors-yaco.onrender.com/)
+- **API Health Check:** [https://atelier-motors-yaco.onrender.com/api/health](https://atelier-motors-yaco.onrender.com/api/health)
+- **Deployment Platform:** Render (Free Web Service + Free Managed PostgreSQL Database)
 
-To deploy in 1 minute on Render:
+The deployment is managed via the repository's **Render Blueprint** (`render.yaml`), which provisions:
+1. A **Free Web Service** running the Node.js API and serving the React SPA bundle with automated restarts.
+2. A **Free Managed PostgreSQL Database** providing durable cloud persistence so inventory and user accounts persist across service sleep cycles and restarts.
+
+### How to reproduce deployment from the repository:
 1. Log into your Render account at [dashboard.render.com](https://dashboard.render.com).
-2. Click **New +** -> **Blueprint**.
-3. Connect your repository (`Lemonseeds/atelier-motors-inventory`).
-4. Click **Apply**. Render will automatically provision both the Postgres database and Web Service with all environment variables (`DATABASE_URL`, `JWT_SECRET`, `PORT`, `NODE_ENV`) wired together.
+2. Click **New +** ➔ **Blueprint**.
+3. Select this repository (`Lemonseeds/atelier-motors-inventory`).
+4. Click **Apply**. Render automatically provisions the database and web service with all environment variables (`DATABASE_URL`, `JWT_SECRET`, `PORT`, `NODE_ENV`) configured.

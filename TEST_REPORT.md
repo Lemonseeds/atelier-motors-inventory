@@ -10,7 +10,11 @@ Run on 23 October 2026 with Node.js 22.14.0 on Windows.
 | Real PostgreSQL Integration | `@electric-sql/pglite` (WASM Postgres) | 1 | 1 | 0 | (included above) |
 | Client Component & Flow Suite | Vitest + React Testing Library | 10 | 10 | 0 | ~4.6s |
 | Production Build | Vite 7 (`npm run build`) | - | Passed | 0 | ~2.3s |
+| Live Cloud Deployment Probe | Render HTTPS & `/api/health` | - | 200 OK | 0 | Verified |
 | **Total Test Suite** | | **36** | **36** | **0** | **~7.0s** |
+
+- **Live URL:** [https://atelier-motors-yaco.onrender.com/](https://atelier-motors-yaco.onrender.com/)
+- **Health Check:** [https://atelier-motors-yaco.onrender.com/api/health](https://atelier-motors-yaco.onrender.com/api/health)
 
 ## Backend Code Coverage (`npm run coverage:server`)
 

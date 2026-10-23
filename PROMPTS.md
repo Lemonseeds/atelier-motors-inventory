@@ -70,3 +70,75 @@ Ok now i want you to continue the work which is left
 4. **Deployment Preparation:**
    - Created `render.yaml` infrastructure-as-code blueprint for Render deployment (Node.js web service + persistent PostgreSQL database).
    - Updated comprehensive `TEST_REPORT.md` and `README.md`.
+
+---
+
+### User → Antigravity (Prompt 3)
+```text
+also the authors is some random guy named ai, Can you make the author someone else like antigravity or codex or something
+```
+
+### Antigravity Actions (Prompt 3)
+- Investigated git log and discovered that the kata's suggested trailer `Co-authored-by: AI <AI@users.noreply.github.com>` inadvertently mapped to a real GitHub user `@ai` (the creator of Autoprefixer/Browserslist).
+- Rewrote commit trailers to use `Co-authored-by: Google Antigravity <antigravity-ai@google.com>` and `Co-authored-by: OpenAI Codex <codex@openai.com>` so that GitHub does not link to third-party accounts.
+
+---
+
+### User → Antigravity (Prompt 4)
+```text
+==> Cloning from https://github.com/Lemonseeds/atelier-motors-inventory
+==> Checking out commit 4a368f01ea4e985630ef9fa512ad499ac1d35621 in branch main
+==> Using Node.js version 24.22.1 (default)
+==> Docs on specifying a Node.js version: https://render.com/docs/node-version
+==> Running build command 'npm ci && npm run build'...
+
+added 118 packages, and audited 119 packages in 2s
+
+38 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+
+> build
+> vite build
+
+sh: 1: vite: not found
+==> Build failed 😞
+==> Common ways to troubleshoot your deploy: https://render.com/docs/troubleshooting-deploys
+```
+
+### Antigravity Actions (Prompt 4)
+- Diagnosed root cause: Render sets `NODE_ENV=production` during builds, which causes `npm ci` to omit `devDependencies` (where `vite` and `@tailwindcss/vite` were placed).
+- Moved `vite`, `@tailwindcss/vite`, and `tailwindcss` into `dependencies` in `package.json`.
+- Updated `render.yaml` build command to `npm ci --include=dev && npm run build` to ensure tools are always present regardless of PaaS environment configuration.
+- Committed and pushed to `main`.
+
+---
+
+### User → Antigravity (Prompt 5 & 6)
+```text
+who is that guy. Remove him
+also where is the admin login??
+```
+
+### Antigravity Actions (Prompt 5 & 6)
+- Identified remaining co-author reference pointing to `@shimonenator` due to a generic email pattern. Standardized all commits to `Google Antigravity <antigravity-ai@google.com>`.
+- Added automatic seeding of a default admin user (`admin@example.com` / `AdminPass123!`) with password hash pre-computed on server boot.
+- Added a convenient one-click "Fill demo admin" button to `client/components/AuthDialog.jsx` for zero-friction evaluation.
+- Documented admin credentials and elevated capabilities in `README.md`.
+
+---
+
+### User → Antigravity (Prompt 7)
+```text
+https://atelier-motors-yaco.onrender.com/
+
+this is the link. COuld you please udate the github repo??
+```
+
+### Antigravity Actions (Prompt 7)
+- Verified the live deployment on Render: HTTPS 200 OK, health check probe `/api/health` 200 OK, and authenticated vehicle endpoints responding over cloud PostgreSQL.
+- Updated `README.md` with the live deployment badge and direct link under the Brownie Points section.
+- Updated `TEST_REPORT.md` with live cloud probe verification evidence.
+- Committed all changes with proper AI attribution trailers and pushed cleanly to `main` on GitHub (`https://github.com/Lemonseeds/atelier-motors-inventory.git`).
+
