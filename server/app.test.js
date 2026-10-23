@@ -71,3 +71,23 @@ test('only admins may restock or delete; owner can update a vehicle', async () =
   assert.equal((await request(app).post(`/api/vehicles/${id}/restock`).set('Authorization', `Bearer ${admin}`).send({ quantity: 3 })).body.vehicle.quantity, 5);
   assert.equal((await request(app).delete(`/api/vehicles/${id}`).set('Authorization', `Bearer ${admin}`)).status, 204);
 });
+
+test('rejects forged tokens, invalid stock changes, and editing another user’s listing', async () => {
+  const owner = await register();
+  const other = await register('other@example.com');
+  const admin = await register('manager@example.com', 'admin');
+  const id = (await addVehicle(owner)).body.vehicle.id;
+  assert.equal((await request(app).get('/api/vehicles').set('Authorization', `Bearer ${owner}tampered`)).status, 401);
+  assert.equal((await request(app).put(`/api/vehicles/${id}`).set('Authorization', `Bearer ${other}`).send({ price: 1 })).status, 403);
+  assert.equal((await request(app).post(`/api/vehicles/${id}/restock`).set('Authorization', `Bearer ${admin}`).send({ quantity: -2 })).status, 400);
+  assert.equal((await request(app).post('/api/vehicles/999999/purchase').set('Authorization', `Bearer ${owner}`)).status, 404);
+});
+
+test('combined make/model query returns only matching vehicles', async () => {
+  const token = await register();
+  await addVehicle(token);
+  await addVehicle(token, { make: 'Aurelia', model: 'Lucent', category: 'Electric' });
+  const result = await request(app).get('/api/vehicles/search?q=Aurelia').set('Authorization', `Bearer ${token}`);
+  assert.equal(result.status, 200);
+  assert.deepEqual(result.body.vehicles.map((vehicle) => vehicle.model), ['Lucent']);
+});
