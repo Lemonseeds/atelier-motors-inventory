@@ -1,0 +1,73 @@
+import { after, before, beforeEach, test } from 'node:test';
+import assert from 'node:assert/strict';
+import request from 'supertest';
+import { createApp } from './app.js';
+import { createDatabase } from './database.js';
+
+let db;
+let app;
+
+before(() => {
+  db = createDatabase(':memory:');
+  app = createApp(db);
+});
+beforeEach(() => db.exec('DELETE FROM vehicles; DELETE FROM users;'));
+after(() => db.close());
+
+async function register(email = 'buyer@example.com', role = 'user') {
+  const response = await request(app).post('/api/auth/register').send({ name: 'Taylor', email, password: 'StrongPass123!' });
+  assert.equal(response.status, 201);
+  if (role === 'admin') db.prepare('UPDATE users SET role = ? WHERE email = ?').run('admin', email);
+  const login = await request(app).post('/api/auth/login').send({ email, password: 'StrongPass123!' });
+  return login.body.token;
+}
+
+async function addVehicle(token, overrides = {}) {
+  return request(app).post('/api/vehicles').set('Authorization', `Bearer ${token}`).send({
+    make: 'Porsche', model: '911 Carrera', category: 'Sports', year: 2024,
+    price: 128500, quantity: 2, imageUrl: 'https://example.com/car.jpg',
+    description: 'A modern icon.', ...overrides,
+  });
+}
+
+test('register, log in, reject duplicate account and invalid credentials', async () => {
+  const token = await register();
+  assert.ok(token);
+  assert.equal((await request(app).post('/api/auth/register').send({ name: 'Taylor', email: 'buyer@example.com', password: 'StrongPass123!' })).status, 409);
+  assert.equal((await request(app).post('/api/auth/login').send({ email: 'buyer@example.com', password: 'wrong' })).status, 401);
+  assert.equal((await request(app).get('/api/vehicles')).status, 401);
+});
+
+test('vehicle create validates data and search supports make, category and price range', async () => {
+  const token = await register();
+  assert.equal((await addVehicle(token, { price: -1 })).status, 400);
+  assert.equal((await addVehicle(token)).status, 201);
+  assert.equal((await addVehicle(token, { make: 'BMW', model: 'i4', category: 'Electric', price: 54000 })).status, 201);
+  const results = await request(app).get('/api/vehicles/search?make=por&category=Sports&minPrice=100000&maxPrice=150000').set('Authorization', `Bearer ${token}`);
+  assert.equal(results.status, 200);
+  assert.equal(results.body.vehicles.length, 1);
+  assert.equal(results.body.vehicles[0].model, '911 Carrera');
+});
+
+test('purchase atomically decreases stock and refuses a sold out vehicle', async () => {
+  const token = await register();
+  const created = await addVehicle(token, { quantity: 1 });
+  const id = created.body.vehicle.id;
+  const first = await request(app).post(`/api/vehicles/${id}/purchase`).set('Authorization', `Bearer ${token}`);
+  const second = await request(app).post(`/api/vehicles/${id}/purchase`).set('Authorization', `Bearer ${token}`);
+  assert.equal(first.status, 200);
+  assert.equal(first.body.vehicle.quantity, 0);
+  assert.equal(second.status, 409);
+  assert.equal(db.prepare('SELECT quantity FROM vehicles WHERE id = ?').get(id).quantity, 0);
+});
+
+test('only admins may restock or delete; owner can update a vehicle', async () => {
+  const user = await register();
+  const admin = await register('admin@example.com', 'admin');
+  const id = (await addVehicle(user)).body.vehicle.id;
+  assert.equal((await request(app).post(`/api/vehicles/${id}/restock`).set('Authorization', `Bearer ${user}`).send({ quantity: 3 })).status, 403);
+  assert.equal((await request(app).delete(`/api/vehicles/${id}`).set('Authorization', `Bearer ${user}`)).status, 403);
+  assert.equal((await request(app).put(`/api/vehicles/${id}`).set('Authorization', `Bearer ${user}`).send({ price: 125000 })).status, 200);
+  assert.equal((await request(app).post(`/api/vehicles/${id}/restock`).set('Authorization', `Bearer ${admin}`).send({ quantity: 3 })).body.vehicle.quantity, 5);
+  assert.equal((await request(app).delete(`/api/vehicles/${id}`).set('Authorization', `Bearer ${admin}`)).status, 204);
+});

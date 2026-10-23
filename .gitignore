@@ -1,0 +1,11 @@
+node_modules/
+.npm-cache/
+client/dist/
+data/
+*.db
+*.db-shm
+*.db-wal
+.env
+coverage/
+playwright-report/
+test-results/
