@@ -91,6 +91,27 @@ export function AuthDialog({ mode, setMode, onClose, onSuccess }) {
         </button>
       </form>
 
+      {isLogin && (
+        <div className="mt-4 border border-[#cfdbee] bg-[#edf2fb] p-3 text-xs text-[#354870]">
+          <div className="flex items-center justify-between">
+            <span className="font-bold tracking-wide text-[11px] text-royal">DEMO ADMIN CREDENTIALS</span>
+            <button
+              type="button"
+              className="font-bold text-royal hover:underline text-[11px]"
+              onClick={() => {
+                setForm({ name: '', email: 'admin@example.com', password: 'AdminPass123!' });
+                setError('');
+              }}
+            >
+              Fill demo admin
+            </button>
+          </div>
+          <p className="mt-1 font-mono text-[11px] text-muted">
+            admin@example.com &bull; AdminPass123!
+          </p>
+        </div>
+      )}
+
       <p className="mt-5 text-center text-xs text-muted">
         {isLogin ? 'New to Atelier?' : 'Already have an account?'}{' '}
         <button

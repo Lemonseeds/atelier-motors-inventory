@@ -2,7 +2,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createApp } from './app.js';
 import { openDatabase } from './db/index.js';
-import { seedVehicles } from './seed.js';
+import { seedDefaultAdmin, seedVehicles } from './seed.js';
 
 if (process.env.NODE_ENV === 'production' && !process.env.JWT_SECRET) {
   throw new Error('JWT_SECRET is required in production.');
@@ -15,6 +15,7 @@ const db = await openDatabase({
   databasePath: process.env.DATABASE_PATH || join(root, 'data', 'inventory.db'),
 });
 await seedVehicles(db);
+await seedDefaultAdmin(db);
 
 const app = createApp(db, { clientDist: join(root, 'client', 'dist') });
 const port = Number(process.env.PORT || 3001);

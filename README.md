@@ -133,6 +133,19 @@ npm start
 ```
 Open [http://localhost:3001](http://localhost:3001). The Express server serves both the REST API and the compiled React production bundle from `client/dist`.
 
+### 5. Administrator Access & Credentials
+The application automatically provisions a pre-configured Administrator account on boot:
+- **Email:** `admin@example.com`
+- **Password:** `AdminPass123!`
+
+Click **Sign in** in the top-right navigation bar and enter these credentials (or use the one-click **"Fill demo admin"** button inside the dialog). Once signed in as an Admin:
+- **`+ Add vehicle`** button appears in the collection toolbar to add new showroom cars.
+- **`Edit details`** button appears on each vehicle card to update pricing, specifications, or imagery.
+- **`Restock`** button appears on each vehicle card to add stock units.
+- **`Delete`** button appears on each vehicle card to permanently remove vehicles.
+
+*(Any account registered with an email matching `ADMIN_EMAIL` in `.env` automatically receives full administrator privileges.)*
+
 ---
 
 ## Running with Docker
