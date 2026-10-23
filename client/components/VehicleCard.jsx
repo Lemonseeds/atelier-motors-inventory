@@ -6,12 +6,15 @@ import { formatPrice } from '../lib/catalog.js';
  * Showroom vehicle card with image, category/stock badges,
  * dynamic pricing, and role-based action controls.
  */
-export function VehicleCard({ vehicle, isAdmin, onPurchase, onEdit, onRestock, onDelete, busy }) {
+export function VehicleCard({ vehicle, isAdmin, onPurchase, onEdit, onRestock, onDelete, onSelect, busy }) {
   const [imageFailed, setImageFailed] = useState(false);
   const isSoldOut = vehicle.quantity === 0;
 
   return (
-    <article className="group overflow-hidden border border-white/95 bg-white/90 shadow-card transition duration-200 hover:-translate-y-1 hover:shadow-card-hover">
+    <article
+      className="group overflow-hidden border border-white/95 bg-white/90 shadow-card transition duration-200 hover:-translate-y-1 hover:shadow-card-hover cursor-pointer"
+      onClick={() => onSelect?.(vehicle)}
+    >
       <div className="relative aspect-[1.47] overflow-hidden bg-[#dae3f1]">
         {vehicle.imageUrl && !imageFailed ? (
           <img
@@ -47,10 +50,10 @@ export function VehicleCard({ vehicle, isAdmin, onPurchase, onEdit, onRestock, o
         </div>
 
         <div className="mt-3 flex items-center justify-between">
-          <h3 className="font-display text-xl sm:text-2xl font-bold tracking-tight text-ink">
+          <h3 className="font-display text-xl sm:text-2xl font-bold tracking-tight text-ink group-hover:text-royal transition">
             {vehicle.make} <span className="font-normal">{vehicle.model}</span>
           </h3>
-          <span className="text-steel opacity-70 group-hover:opacity-100 transition">
+          <span className="text-steel opacity-70 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition">
             <ArrowUpRight size={20} />
           </span>
         </div>
@@ -74,7 +77,10 @@ export function VehicleCard({ vehicle, isAdmin, onPurchase, onEdit, onRestock, o
               isSoldOut ? 'bg-[#b7bfce]' : 'bg-royal hover:bg-royal-deep'
             }`}
             disabled={isSoldOut || busy}
-            onClick={() => onPurchase(vehicle)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onPurchase(vehicle);
+            }}
           >
             {isSoldOut ? 'Unavailable' : 'Purchase'} <ArrowRight size={16} />
           </button>
@@ -85,21 +91,30 @@ export function VehicleCard({ vehicle, isAdmin, onPurchase, onEdit, onRestock, o
             <button
               type="button"
               className="text-[#526ab6] hover:underline"
-              onClick={() => onEdit(vehicle)}
+              onClick={(e) => {
+                e.stopPropagation();
+                onEdit(vehicle);
+              }}
             >
               Edit details
             </button>
             <button
               type="button"
               className="text-[#526ab6] hover:underline"
-              onClick={() => onRestock(vehicle)}
+              onClick={(e) => {
+                e.stopPropagation();
+                onRestock(vehicle);
+              }}
             >
               Restock
             </button>
             <button
               type="button"
               className="ml-auto text-danger hover:underline"
-              onClick={() => onDelete(vehicle)}
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete(vehicle);
+              }}
             >
               Delete
             </button>

@@ -19,6 +19,7 @@ import { api } from './api.js';
 import { AuthDialog } from './components/AuthDialog.jsx';
 import { Modal } from './components/Modal.jsx';
 import { VehicleCard } from './components/VehicleCard.jsx';
+import { VehicleDetailDialog } from './components/VehicleDetailDialog.jsx';
 import { VehicleDialog } from './components/VehicleDialog.jsx';
 import { ALL_CATEGORIES, CATEGORIES, EMPTY_FILTERS, PREVIEW_VEHICLES, filterVehicles, toSearchParams } from './lib/catalog.js';
 
@@ -33,6 +34,7 @@ export function App() {
 
   const [authMode, setAuthMode] = useState(null); // 'login' | 'register' | null
   const [vehicles, setVehicles] = useState(PREVIEW_VEHICLES);
+  const [selectedVehicle, setSelectedVehicle] = useState(null);
   const [filters, setFilters] = useState(EMPTY_FILTERS);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [vehicleDialog, setVehicleDialog] = useState(undefined); // null for create, object for edit, undefined for closed
@@ -105,6 +107,13 @@ export function App() {
     if (token) return vehicles;
     return filterVehicles(PREVIEW_VEHICLES, filters);
   }, [token, vehicles, filters]);
+
+  // Keep selected vehicle in sync with live inventory updates
+  useEffect(() => {
+    if (!selectedVehicle) return;
+    const fresh = (token ? vehicles : PREVIEW_VEHICLES).find((v) => v.id === selectedVehicle.id);
+    if (fresh) setSelectedVehicle(fresh);
+  }, [vehicles, token, selectedVehicle]);
 
   function saveAuth(data) {
     localStorage.setItem('atelier-auth', JSON.stringify(data));
@@ -479,6 +488,7 @@ export function App() {
                   key={vehicle.id}
                   vehicle={vehicle}
                   isAdmin={isAdmin}
+                  onSelect={(v) => setSelectedVehicle(v)}
                   onPurchase={purchase}
                   onEdit={(v) => setVehicleDialog(v)}
                   onRestock={(v) => {
@@ -564,6 +574,26 @@ export function App() {
             <X size={15} />
           </button>
         </div>
+      )}
+
+      {selectedVehicle && (
+        <VehicleDetailDialog
+          vehicle={selectedVehicle}
+          isAdmin={isAdmin}
+          isAuthenticated={Boolean(token)}
+          onClose={() => setSelectedVehicle(null)}
+          onPurchase={purchase}
+          onEdit={(v) => {
+            setSelectedVehicle(null);
+            setVehicleDialog(v);
+          }}
+          onRestock={(v) => {
+            setSelectedVehicle(null);
+            setRestock(v);
+            setRestockQuantity(1);
+          }}
+          busy={busyId === selectedVehicle.id}
+        />
       )}
 
       {/* Modals */}

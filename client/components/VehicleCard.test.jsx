@@ -39,4 +39,12 @@ describe('VehicleCard', () => {
     expect(props.onDelete).toHaveBeenCalledWith(vehicle);
     expect(props.onEdit).toHaveBeenCalledWith(vehicle);
   });
+
+  it('calls onSelect when the card is clicked', async () => {
+    const onSelect = vi.fn();
+    render(<VehicleCard vehicle={vehicle} {...handlers()} onSelect={onSelect} />);
+    await userEvent.click(screen.getByRole('heading', { name: /Aurelia GT S/ }));
+    expect(onSelect).toHaveBeenCalledWith(vehicle);
+  });
 });
+

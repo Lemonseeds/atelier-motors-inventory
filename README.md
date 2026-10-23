@@ -1,7 +1,7 @@
 # Atelier Motors — Car Dealership Inventory System
 
 [![Live Demo](https://img.shields.io/badge/live%20demo-online-brightgreen)](https://atelier-motors-yaco.onrender.com/)
-[![CI Tests](https://img.shields.io/badge/tests-36%20passed-success)](TEST_REPORT.md)
+[![CI Tests](https://img.shields.io/badge/tests-37%20passed-success)](TEST_REPORT.md)
 [![Coverage](https://img.shields.io/badge/backend%20coverage-98.2%25-brightgreen)](TEST_REPORT.md)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
