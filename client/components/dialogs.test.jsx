@@ -7,7 +7,9 @@ import { api } from '../api.js';
 
 vi.mock('../api.js', () => ({ api: vi.fn() }));
 
-beforeEach(() => vi.mocked(api).mockReset());
+beforeEach(() => {
+  vi.mocked(api).mockReset();
+});
 
 describe('AuthDialog', () => {
   it('registers with name, email and password and reports success', async () => {

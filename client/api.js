@@ -1,7 +1,12 @@
-const base = '/api';
+const BASE_URL = '/api';
 
+/**
+ * Small fetch wrapper for the JSON API.
+ * Adds the bearer token, parses JSON, and throws an Error (with `status`)
+ * carrying the server's message for non-2xx responses.
+ */
 export async function api(path, { token, ...options } = {}) {
-  const response = await fetch(`${base}${path}`, {
+  const response = await fetch(`${BASE_URL}${path}`, {
     ...options,
     headers: {
       ...(options.body ? { 'Content-Type': 'application/json' } : {}),
@@ -11,6 +16,10 @@ export async function api(path, { token, ...options } = {}) {
   });
   if (response.status === 204) return null;
   const body = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(body.error || 'Something went wrong. Please try again.');
+  if (!response.ok) {
+    const error = new Error(body.error || 'Something went wrong. Please try again.');
+    error.status = response.status;
+    throw error;
+  }
   return body;
 }

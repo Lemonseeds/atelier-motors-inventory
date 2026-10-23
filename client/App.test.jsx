@@ -12,7 +12,9 @@ function signInAs(role) {
   vi.mocked(api).mockImplementation(async (path) => (path === '/auth/me' ? { user: { id: 1, name: 'Robin', role } } : { vehicles: [liveVehicle] }));
 }
 
-beforeEach(() => vi.mocked(api).mockReset());
+beforeEach(() => {
+  vi.mocked(api).mockReset();
+});
 
 describe('App', () => {
   it('shows a sign-in button and preview collection to visitors', () => {
