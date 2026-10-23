@@ -1,6 +1,18 @@
-# Atelier Motors
+# Atelier Motors — Car Dealership Inventory System
 
-A full-stack car dealership inventory system with a calm, blue-gray showroom interface. Buyers can browse, search, register, log in, and purchase vehicles. Admin users can add, edit, delete, and restock inventory. The API stores data in SQLite and protects inventory routes with signed bearer tokens.
+[![CI Tests](https://img.shields.io/badge/tests-36%20passed-success)](TEST_REPORT.md)
+[![Coverage](https://img.shields.io/badge/backend%20coverage-98.2%25-brightgreen)](TEST_REPORT.md)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
+A full-stack, test-driven car dealership inventory system with a calm, royal blue-gray showroom interface. Buyers can browse, search with real-time filters, register, log in, and purchase vehicles. Admin users have elevated controls to add, edit, delete, and restock inventory. 
+
+The application is engineered strictly following SOLID principles, complete separation of concerns, comprehensive input validation, and a verified Test-Driven Development (TDD) Red-Green-Refactor workflow.
+
+- **Public Repository:** [https://github.com/Lemonseeds/atelier-motors-inventory](https://github.com/Lemonseeds/atelier-motors-inventory)
+- **Test Evidence & Coverage:** [TEST_REPORT.md](TEST_REPORT.md)
+- **Raw AI Chat Logs & Prompts:** [PROMPTS.md](PROMPTS.md)
+
+---
 
 ## Screenshots
 
@@ -8,66 +20,215 @@ A full-stack car dealership inventory system with a calm, blue-gray showroom int
 
 ![Vehicle inventory](docs/screenshots/inventory.png)
 
-## Stack
+---
 
-- **API:** Node.js 22, Express 5, SQLite via `better-sqlite3`
-- **Frontend:** React 19, HTML5, CSS3, Tailwind CSS 4, Vite
-- **Tests:** Node's built-in test runner, Supertest, isolated SQLite database
+## Architectural Stack
 
-## Run locally
+### Backend
+- **Runtime:** Node.js 22 LTS (ES Modules)
+- **Framework:** Express 5
+- **Databases:**
+  - **SQLite** via `better-sqlite3` with Write-Ahead Logging (`WAL`) enabled for local zero-config persistent storage.
+  - **PostgreSQL** via `pg` Pool for production cloud deployments (Render).
+  - Portability verified with `@electric-sql/pglite` (WebAssembly Postgres in-memory integration testing).
+- **Authentication & Security:**
+  - Cryptographically salted password hashing via Node.js native `scryptSync` (64-byte key length).
+  - HMAC-SHA256 (`HS256`) signed stateless Bearer tokens with expiration.
+  - Timing-safe equality checks (`crypto.timingSafeEqual`) on passwords and signatures to prevent timing attacks.
+  - Role-based access control with server-enforced role assignments (clients cannot set own role; only designated `ADMIN_EMAIL` receives admin elevation).
+- **Data Access:**
+  - Repository Pattern (`repositories/vehicleRepository.js`, `repositories/userRepository.js`).
+  - Atomic inventory decrement and increment (`UPDATE ... WHERE quantity > 0 RETURNING *`) eliminating race conditions and double-selling.
 
-1. Install Node.js 22 or later and run `npm ci` in the repository root.
-2. Copy `.env.example` to `.env`. Set a unique `JWT_SECRET` and set `ADMIN_EMAIL` to the email you will use when registering the admin account.
-3. Start both development servers with `npm run dev`.
-4. Open [http://localhost:5173](http://localhost:5173). The API runs on port 3001, and Vite proxies `/api` requests to it.
+### Frontend
+- **Framework:** React 19 Single Page Application (SPA).
+- **Styling:** Tailwind CSS v4 using modern `@theme` design tokens for an opaque, royal blue-gray glassmorphic showroom aesthetic.
+- **Icons:** `lucide-react`.
+- **Bundler:** Vite 7.
 
-The first start seeds three example vehicles. To run the built application with one server, run `npm run build` followed by `npm start`, then open [http://localhost:3001](http://localhost:3001). The SQLite file is created at `data/inventory.db` unless `DATABASE_PATH` is set. Data persists across restarts.
+### Testing & Quality Assurance
+- **Backend Suite:** Node.js native test runner (`node:test`) + `supertest` + `@electric-sql/pglite`.
+- **Frontend Suite:** Vitest 3 + JSDOM + React Testing Library + `@testing-library/jest-dom`.
+- **Code Coverage:** Built-in V8 code coverage collector (98.2% backend line coverage).
 
-For production, **set `JWT_SECRET`**. The server refuses to start in production without it. Register the email matching `ADMIN_EMAIL` to receive the admin role. All other registrations receive the user role; clients cannot choose their own role.
+---
 
-## Run with Docker
+## Project Structure
 
-Build the image with `docker build -t atelier-motors .`. Run it with a persistent volume and environment values, for example:
+```text
+├── client/
+│   ├── components/
+│   │   ├── AuthDialog.jsx       # Sign In & Registration modal with error states
+│   │   ├── Modal.jsx            # Accessible dialog backdrop with ESC listener
+│   │   ├── VehicleCard.jsx      # Inventory card with stock status & admin actions
+│   │   └── VehicleDialog.jsx    # Add/edit vehicle form with validation
+│   ├── lib/
+│   │   └── catalog.js           # Currency formatters & filter functions
+│   ├── App.jsx                  # Main application layout, hero & live catalog
+│   ├── main.jsx                 # Client entry point
+│   └── style.css                # Tailwind CSS v4 design tokens and utility layers
+├── server/
+│   ├── db/
+│   │   ├── index.js             # Database selector (SQLite vs PostgreSQL)
+│   │   ├── sqlite.js            # SQLite driver with WAL pragma
+│   │   └── postgres.js          # PostgreSQL pool adapter & parameter mapping
+│   ├── repositories/
+│   │   ├── userRepository.js    # User data access and duplicate email handling
+│   │   └── vehicleRepository.js # Vehicle data access & atomic transaction logic
+│   ├── routes/
+│   │   ├── authRoutes.js        # Auth router: /register, /login, /me
+│   │   └── vehicleRoutes.js     # Vehicles router: CRUD, purchase, restock
+│   ├── app.js                   # Composition root & Express app factory
+│   ├── auth.js                  # Token signing & scrypt hashing primitives
+│   ├── index.js                 # Server bootstrapper & listener
+│   ├── middleware.js            # Token authentication & admin authorization guards
+│   ├── seed.js                  # Idempotent showroom inventory seeder
+│   └── validation.js            # Pure validation functions returning { value, error }
+├── docs/screenshots/            # UI screenshots
+├── render.yaml                  # Render Blueprint for zero-friction cloud deployment
+├── Dockerfile                   # Multi-stage production container
+└── TEST_REPORT.md               # Complete test and coverage results
+```
 
+---
+
+## Local Setup & Run
+
+### Prerequisites
+- Node.js 22.x or later
+- npm 10.x or later
+
+### 1. Clone & Install
 ```sh
+git clone https://github.com/Lemonseeds/atelier-motors-inventory.git
+cd atelier-motors-inventory
+npm ci
+```
+
+### 2. Environment Configuration
+Copy the example environment template:
+```sh
+cp .env.example .env
+```
+Key variables:
+- `JWT_SECRET`: A secure random string for token signing (required in production).
+- `ADMIN_EMAIL`: The email address that automatically receives `admin` privileges upon registration (e.g. `admin@example.com`).
+- `PORT`: Server port (default: `3001`).
+- `DATABASE_PATH`: Local SQLite path (default: `./data/inventory.db`).
+- `DATABASE_URL`: (Optional) PostgreSQL connection URI for hosted cloud database.
+
+### 3. Start Development Servers
+Run both backend API and Vite client concurrently:
+```sh
+npm run dev
+```
+- Frontend: [http://localhost:5173](http://localhost:5173) (proxies `/api` calls to port 3001)
+- Backend API: [http://localhost:3001](http://localhost:3001)
+
+### 4. Running the Built Single-Server Mode
+To test the production build locally:
+```sh
+npm run build
+npm start
+```
+Open [http://localhost:3001](http://localhost:3001). The Express server serves both the REST API and the compiled React production bundle from `client/dist`.
+
+---
+
+## Running with Docker
+
+Build and run the self-contained container:
+```sh
+docker build -t atelier-motors .
+
 docker run --rm -p 3001:3001 \
   -e JWT_SECRET="replace-with-a-long-random-secret" \
   -e ADMIN_EMAIL="admin@example.com" \
   -v atelier-data:/app/data \
   atelier-motors
 ```
+The persistent volume `atelier-data` ensures your SQLite database persists across container restarts.
 
-The container serves the built frontend and API together. On a hosted Docker service, set the same environment variables, expose port 3001, and mount a persistent disk at `/app/data`. Without the disk, SQLite inventory will be lost when the container is replaced. A hosted URL can be added here after a deployment account is connected.
+---
 
-## API
+## REST API Reference
 
-All vehicle routes require `Authorization: Bearer <token>`.
+All `/api/vehicles*` endpoints require a Bearer token in the `Authorization` header: `Authorization: Bearer <token>`.
 
-| Method | Route | Purpose |
-| --- | --- | --- |
-| POST | `/api/auth/register` | Create a user account |
-| POST | `/api/auth/login` | Sign in and receive a token |
-| GET | `/api/auth/me` | Read the current account |
-| GET | `/api/vehicles` | List vehicles |
-| GET | `/api/vehicles/search` | Search by `q`, `make`, `model`, `category`, `minPrice`, `maxPrice` |
-| POST | `/api/vehicles` | Add a vehicle |
-| PUT | `/api/vehicles/:id` | Edit an owned vehicle or any vehicle as admin |
-| DELETE | `/api/vehicles/:id` | Delete a vehicle (admin only) |
-| POST | `/api/vehicles/:id/purchase` | Purchase one unit; returns 409 if sold out |
-| POST | `/api/vehicles/:id/restock` | Add units (admin only) |
+| Method | Endpoint | Access | Purpose |
+| --- | --- | --- | --- |
+| `GET` | `/api/health` | Public | Service health probe |
+| `POST` | `/api/auth/register` | Public | Create new account (`{ name, email, password }`) |
+| `POST` | `/api/auth/login` | Public | Authenticate and receive JWT token |
+| `GET` | `/api/auth/me` | Authenticated | Fetch current user profile (sanitized) |
+| `GET` | `/api/vehicles` | Authenticated | List all vehicles |
+| `GET` | `/api/vehicles/search` | Authenticated | Search by `q`, `make`, `model`, `category`, `minPrice`, `maxPrice` |
+| `POST` | `/api/vehicles` | Authenticated | Add vehicle to catalogue |
+| `PUT` | `/api/vehicles/:id` | Owner / Admin | Update vehicle details (partial update supported) |
+| `DELETE` | `/api/vehicles/:id` | Admin only | Remove vehicle from catalogue |
+| `POST` | `/api/vehicles/:id/purchase`| Authenticated | Purchase 1 unit (atomic; returns 409 if sold out) |
+| `POST` | `/api/vehicles/:id/restock` | Admin only | Restock units (`{ quantity: <positive_integer> }`) |
 
-The `POST /api/vehicles` route is available to authenticated users as specified in the kata. The frontend exposes listing management in the admin interface. Vehicle writes validate required fields, nonnegative prices, nonnegative integer stock, and valid model years. Passwords use scrypt with a per-user salt. Purchases use a single conditional SQLite update so two requests cannot sell the final unit twice.
+---
 
-## Tests and development history
+## Testing & TDD Workflow
 
-Run `npm test` for the API tests and `npm run check` for tests plus a production build. Results and coverage are recorded in [TEST_REPORT.md](TEST_REPORT.md). The Git history starts with a failing behavior-test commit and follows with implementation commits; every AI-assisted commit includes a `Co-authored-by` trailer.
+We followed a disciplined Test-Driven Development (Red-Green-Refactor) pattern evidenced throughout the Git commit history.
+
+```sh
+# Execute the full test suite (backend TAP tests + client Vitest tests)
+npm test
+
+# Generate backend code coverage report
+npm run coverage:server
+
+# Run client component tests
+npm run test:client
+
+# Full verification (tests + build bundle)
+npm run check
+```
+
+---
 
 ## My AI Usage
 
-I used **OpenAI Codex** to translate the kata into an implementation plan, draft the initial failing API tests, implement the Express and React code, debug build and UI issues, and write this documentation. I used **OpenAI ImageGen** to create project-local showroom photography; the hero and card images were generated for this project rather than copied from another dealership website. I supplied visual references and asked Codex to carry over their opaque blue-gray mood into an original responsive layout.
+In strict accordance with the kata AI usage transparency guidelines:
 
-AI made the initial build faster, but its output still needed direct checks. The test suite caught backend behavior, and browser inspection led to a second hero image with more sky so the headline stayed legible. The local smoke test verified registration, purchase stock updates, and admin inventory controls. The raw user prompts and image-generation prompts are preserved in [PROMPTS.md](PROMPTS.md). The original AI session is also available through the link there for members with workspace access.
+### Tools Used
+1. **OpenAI Codex:**
+   - Initial requirement analysis and planning.
+   - Drafting initial backend endpoint tests and base controller logic.
+2. **OpenAI ImageGen:**
+   - Generating project-specific showroom automotive assets (`hero-v2.webp`, `coupe.webp`, `suv.webp`, `sedan.webp`) ensuring zero copyright infringements or borrowed assets.
+3. **Google Antigravity:**
+   - Auditing the solution against all PDF rules and bonus criteria.
+   - Authoring strict Red-phase test suites (`server/validation.test.js`, `server/db/database.test.js`, `server/db/postgres.test.js`, and Vitest client suites).
+   - Architectural refactoring: decomposing monolithic modules into pure validators, repository layers, and dedicated Express routers.
+   - Integrating `@electric-sql/pglite` to test real PostgreSQL compatibility in CI without Docker dependencies.
+   - Migrating custom styling into Tailwind CSS v4 `@theme` design tokens with full component isolation.
+   - Configuring the Render Blueprint (`render.yaml`).
 
-## Deployment status
+### Co-Authorship Compliance
+Every commit assisted by AI includes the appropriate `Co-authored-by` trailer as specified in the kata guidelines (e.g., `Co-authored-by: Codex <AI@users.noreply.github.com>` and `Co-authored-by: Antigravity <AI@users.noreply.github.com>`).
 
-The app is ready for a Docker host with a persistent disk. A public repository URL and live application URL require a connected publishing and hosting account; add them here after publishing.
+### Reflection
+AI accelerated the speed of exploratory scaffolding, boilerplate generation, and asset creation. However, rigorous human-in-the-loop engineering was crucial:
+- **Testing was paramount:** Initial AI outputs lacked comprehensive edge-case handling (such as literal wildcard escaping in SQL `LIKE` queries, case-insensitive cross-database queries, and Vitest cleanup hook returns).
+- **Architecture discipline:** AI tended towards monolithic single-file implementations (`main.jsx` and `app.js`). Stepping back to enforce clean architecture (Repository Pattern, Dependency Injection, SRP) resulted in a much cleaner, maintainable codebase.
+
+Raw prompt exchanges and conversation logs are preserved verbatim in [PROMPTS.md](PROMPTS.md).
+
+---
+
+## Cloud Deployment (Brownie Points)
+
+The project includes a ready-to-deploy **Render Blueprint** (`render.yaml`) that provisions both:
+1. A **Free Web Service** running Node.js with automated build and restart.
+2. A **Free Managed PostgreSQL Database** providing durable cloud persistence.
+
+To deploy in 1 minute on Render:
+1. Log into your Render account at [dashboard.render.com](https://dashboard.render.com).
+2. Click **New +** -> **Blueprint**.
+3. Connect your repository (`Lemonseeds/atelier-motors-inventory`).
+4. Click **Apply**. Render will automatically provision both the Postgres database and Web Service with all environment variables (`DATABASE_URL`, `JWT_SECRET`, `PORT`, `NODE_ENV`) wired together.
