@@ -2,13 +2,13 @@ import { after, before, beforeEach, test } from 'node:test';
 import assert from 'node:assert/strict';
 import request from 'supertest';
 import { createApp } from './app.js';
-import { createDatabase } from './database.js';
+import { createSqliteDatabase } from './db/sqlite.js';
 
 let db;
 let app;
 
 before(() => {
-  db = createDatabase(':memory:');
+  db = createSqliteDatabase(':memory:');
   app = createApp(db);
 });
 beforeEach(() => db.exec('DELETE FROM vehicles; DELETE FROM users;'));
@@ -90,4 +90,60 @@ test('combined make/model query returns only matching vehicles', async () => {
   const result = await request(app).get('/api/vehicles/search?q=Aurelia').set('Authorization', `Bearer ${token}`);
   assert.equal(result.status, 200);
   assert.deepEqual(result.body.vehicles.map((vehicle) => vehicle.model), ['Lucent']);
+});
+
+test('GET /api/vehicles lists every vehicle and search filters by model', async () => {
+  const token = await register();
+  await addVehicle(token);
+  await addVehicle(token, { make: 'BMW', model: 'i4', category: 'Electric' });
+  const all = await request(app).get('/api/vehicles').set('Authorization', `Bearer ${token}`);
+  assert.equal(all.body.vehicles.length, 2);
+  const byModel = await request(app).get('/api/vehicles/search?model=I4').set('Authorization', `Bearer ${token}`);
+  assert.deepEqual(byModel.body.vehicles.map((v) => v.make), ['BMW']);
+});
+
+test('search rejects an invalid or inverted price range', async () => {
+  const token = await register();
+  const auth = { Authorization: `Bearer ${token}` };
+  assert.equal((await request(app).get('/api/vehicles/search?minPrice=abc').set(auth)).status, 400);
+  assert.equal((await request(app).get('/api/vehicles/search?minPrice=500&maxPrice=100').set(auth)).status, 400);
+});
+
+test('registration validates input and grants admin only to ADMIN_EMAIL', async () => {
+  assert.equal((await request(app).post('/api/auth/register').send({ name: 'A', email: 'bad', password: 'StrongPass123!' })).status, 400);
+  process.env.ADMIN_EMAIL = 'Boss@Example.com';
+  try {
+    const boss = await request(app).post('/api/auth/register').send({ name: 'Boss', email: 'boss@example.com', password: 'StrongPass123!', role: 'user' });
+    assert.equal(boss.body.user.role, 'admin');
+    const sneaky = await request(app).post('/api/auth/register').send({ name: 'S', email: 's@example.com', password: 'StrongPass123!', role: 'admin' });
+    assert.equal(sneaky.body.user.role, 'user');
+  } finally {
+    delete process.env.ADMIN_EMAIL;
+  }
+});
+
+test('GET /api/auth/me returns the signed-in user without the password hash', async () => {
+  const token = await register();
+  const me = await request(app).get('/api/auth/me').set('Authorization', `Bearer ${token}`);
+  assert.equal(me.status, 200);
+  assert.equal(me.body.user.email, 'buyer@example.com');
+  assert.equal(me.body.user.password_hash, undefined);
+});
+
+test('update and delete handle bad input and missing vehicles', async () => {
+  const admin = await register('admin@example.com', 'admin');
+  const auth = { Authorization: `Bearer ${admin}` };
+  const id = (await addVehicle(admin)).body.vehicle.id;
+  assert.equal((await request(app).put(`/api/vehicles/${id}`).set(auth).send({ quantity: -3 })).status, 400);
+  assert.equal((await request(app).put(`/api/vehicles/${id}`).set(auth).send({})).status, 400);
+  assert.equal((await request(app).put('/api/vehicles/424242').set(auth).send({ price: 1 })).status, 404);
+  assert.equal((await request(app).put('/api/vehicles/abc').set(auth).send({ price: 1 })).status, 400);
+  assert.equal((await request(app).delete('/api/vehicles/424242').set(auth)).status, 404);
+  assert.equal((await request(app).post('/api/vehicles/424242/restock').set(auth).send({ quantity: 1 })).status, 404);
+});
+
+test('health check is public and malformed JSON returns 400', async () => {
+  assert.equal((await request(app).get('/api/health')).status, 200);
+  const bad = await request(app).post('/api/auth/login').set('Content-Type', 'application/json').send('{"email":');
+  assert.equal(bad.status, 400);
 });
