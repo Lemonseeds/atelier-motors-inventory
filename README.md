@@ -23,6 +23,10 @@ The application is engineered strictly following SOLID principles, complete sepa
 
 ![Vehicle inventory](docs/screenshots/inventory.png)
 
+![Our Experience editorial section](docs/screenshots/our-experience.png)
+
+![About Atelier Motors editorial section](docs/screenshots/about-experience.png)
+
 ---
 
 ## Architectural Stack
