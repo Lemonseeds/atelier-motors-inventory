@@ -191,6 +191,34 @@ ok soo that actual content on the website is very less. I want you to add more c
 - Wrote a staged AI assistant placement and rollout proposal in `CHATBOT_STRATEGY.md`; no chatbot was implemented in this prompt.
 - Ran the existing backend and frontend tests and a production build.
 
+---
+
+### User → Antigravity (Prompt 12)
+```text
+can you see the new changes made to the website?? Also if you see it i want you to add parralax scrolling to the page. Make it look like it was made by a professional website designer. Make use of tools and everything. Take inspiration from other websites that have parralax scrolling if needed.
+```
+
+### Antigravity Actions (Prompt 12)
+- Reviewed the Codex Experience/About commits, then researched premium automotive parallax patterns (Lenis inertial scroll, clip-path frame reveals, layered depth, pinned storytelling).
+- Added `lenis` and built `client/lib/motion.jsx`: one scroll loop writes normalised CSS variables (`--progress`, `--center`, `--enter`, `--exit`, `--pin`) onto registered scenes, plus `Reveal`/`RevealWords` (IntersectionObserver fade-ups and masked word reveals).
+- Hero: photo sinks and scales, haze drifts, headline lifts and fades; on-load word reveal and an animated scroll cue.
+- Experience/About: image frames open from rounded insets to full bleed, oversized photos drift inside their frames, glass panels counter-move, journey cards drift at staggered speeds.
+- New kinetic marquee band and a pinned 260vh interlude where the sedan frame expands to full bleed before three statements arrive.
+- Reading-progress bar; reduced-motion and jsdom fall back to static, fully visible layouts. Client tests and production build pass.
+
+---
+
+### User → Antigravity (Prompt 13)
+```text
+the first image that i have attached, the letter s of the word moves is being cut in the end. Same way in the second image, the letter y from the word journey is being cut in the end. And the third image, the image of the car initially looks very odd. Fix these issues
+```
+
+### Antigravity Actions (Prompt 13)
+- Resolved word clipping on terminal glyphs (`s` in `moves`, `y` in `journey`): added horizontal breathing padding and compensating negative margin to `.word-mask` (`padding: 0 0.35em 0.18em 0.04em; margin: 0 -0.35em -0.18em -0.04em;`), released `overflow: hidden` to `overflow: visible` via a new `.is-done` state once word reveal transitions finish, removed the 4° slant rotation on `.word`, and relaxed display heading tracking from aggressive `-0.065em` to balanced `-0.04em`.
+- Fixed the pinned `Interlude` sedan section: removed the artificial 44% width `clip-path: inset(16% 22%)` and 1.28x over-zoom that cut off the car profile and door panel. Framed the car in full-bleed 16:9 widescreen with centered stance (`object-[center_60%] sm:object-[center_55%]`, starting at clean 1.0 scale with a gentle 1.0 → 1.06 cinematic push). Positioned the intro subtitle safely in the sky area (`top-14 sm:top-20`) with soft gradient mist transitions at section boundaries, eliminating all awkward borders, clipping, and text collisions.
+- Ran full test suite (26 backend tests, 11 frontend tests) and verified clean production build.
+
+
 
 
 

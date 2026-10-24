@@ -52,6 +52,7 @@ The application is engineered strictly following SOLID principles, complete sepa
 - **Styling:** Tailwind CSS v4 using modern `@theme` design tokens for an opaque, royal blue-gray glassmorphic showroom aesthetic.
 - **Icons:** `lucide-react`.
 - **Bundler:** Vite 7.
+- **Motion & Parallax:** Lenis inertial smooth scrolling, GPU-composited CSS variable-driven parallax scenes, clip-path frame reveals, kinetic marquee typography, and pinned cinematic interlude storytelling.
 - **Editorial content:** The Experience and About sections now explain the browsing journey, brand point of view, listing clarity, and common questions in a layered blue-gray design.
 
 ### Testing & Quality Assurance

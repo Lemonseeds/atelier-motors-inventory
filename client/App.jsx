@@ -18,8 +18,9 @@ import { Modal } from './components/Modal.jsx';
 import { VehicleCard } from './components/VehicleCard.jsx';
 import { VehicleDetailDialog } from './components/VehicleDetailDialog.jsx';
 import { VehicleDialog } from './components/VehicleDialog.jsx';
-import { AboutSection, ExperienceSection } from './components/EditorialSections.jsx';
+import { AboutSection, ExperienceSection, Interlude, MarqueeBand } from './components/EditorialSections.jsx';
 import { ALL_CATEGORIES, CATEGORIES, EMPTY_FILTERS, PREVIEW_VEHICLES, filterVehicles, toSearchParams } from './lib/catalog.js';
+import { Reveal, RevealWords, scrollToTarget, useScene, useScrollMotion } from './lib/motion.jsx';
 
 export function App() {
   const [auth, setAuth] = useState(() => {
@@ -47,6 +48,9 @@ export function App() {
   const token = auth?.token;
   const user = auth?.user;
   const isAdmin = user?.role === 'admin';
+
+  useScrollMotion();
+  const heroRef = useScene();
 
   // Auto-clear toast
   useEffect(() => {
@@ -194,11 +198,16 @@ export function App() {
   }
 
   const scrollToCollection = () => {
-    document.getElementById('collection')?.scrollIntoView({ behavior: 'smooth' });
+    scrollToTarget('#collection');
   };
 
   return (
     <>
+      {/* Reading progress */}
+      <div className="pointer-events-none fixed inset-x-0 top-0 z-50 h-[2px]" aria-hidden="true">
+        <div className="scroll-progress h-full w-full" />
+      </div>
+
       {/* Site Header */}
       <header className="absolute top-0 left-0 z-10 w-full">
         <div className="relative mx-auto flex h-[76px] sm:h-[82px] w-[min(1400px,calc(100%-48px))] items-center justify-between border-b border-white/30 px-3 sm:px-7 text-white">
@@ -275,35 +284,48 @@ export function App() {
       </header>
 
       <main id="top">
-        {/* Hero Section */}
-        <section className="relative h-[min(690px,73vw)] min-h-[570px] overflow-hidden bg-[#8ba5ca] shell">
+        {/* Hero Section: layered parallax — photo sinks, haze drifts, copy lifts away */}
+        <section ref={heroRef} data-scene className="relative h-[min(760px,92vh)] min-h-[600px] overflow-hidden bg-[#8ba5ca] shell">
           <img
-            className="absolute inset-0 h-full w-full object-cover object-[center_58%] sm:object-[center_58%]"
+            className="hero-media will-move absolute inset-0 h-full w-full object-cover object-[center_58%] sm:object-[center_58%]"
             src="/hero-v2.webp"
             alt="Silver-blue luxury crossover on a misty open road"
+            fetchPriority="high"
           />
           <div className="hero-scrim absolute inset-0" />
-          <div className="relative z-1 flex h-full flex-col items-center pt-28 sm:pt-32 text-center text-white">
-            <div className="text-[10px] font-extrabold tracking-[.28em] text-glow">
+          <div className="hero-haze will-move pointer-events-none absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-mist/70 via-mist/10 to-transparent" />
+          <div className="hero-copy will-move relative z-1 flex h-full flex-col items-center pt-28 sm:pt-32 text-center text-white">
+            <Reveal immediate delay={150} variant="fade" className="text-[10px] font-extrabold tracking-[.28em] text-glow">
               THE ART OF DRIVING, REIMAGINED
-            </div>
-            <h1 className="mt-4 mb-3 font-display text-[44px] sm:text-[clamp(44px,5.2vw,77px)] font-semibold leading-[1.03] tracking-[-.065em] text-glow">
-              Find the car that<br />moves <em className="italic font-normal">you.</em>
-            </h1>
-            <p className="m-0 text-sm sm:text-[15px] text-white/95 text-glow max-w-md">
+            </Reveal>
+            <RevealWords
+              as="h1"
+              immediate
+              delay={250}
+              stagger={70}
+              className="mt-4 mb-3 block font-display text-[44px] sm:text-[clamp(44px,5.2vw,77px)] font-semibold leading-[1.03] tracking-[-.04em] text-glow"
+            >
+              Find the car that<br />moves {<em className="italic font-normal">you.</em>}
+            </RevealWords>
+            <Reveal as="p" immediate delay={750} className="m-0 text-sm sm:text-[15px] text-white/95 text-glow max-w-md">
               A considered collection for wherever the road takes you.
-            </p>
-            <div className="mt-auto mb-20 sm:mb-24 flex items-center gap-1.5">
-              <i className="block h-[3px] w-6 bg-white" />
-              <i className="block h-[3px] w-3 bg-white/60" />
-              <i className="block h-[3px] w-3 bg-white/60" />
-              <i className="block h-[3px] w-3 bg-white/60" />
-            </div>
+            </Reveal>
+            <button
+              type="button"
+              onClick={() => scrollToTarget('#experience')}
+              className="hero-cue mt-auto mb-24 sm:mb-28 flex flex-col items-center gap-3 text-[9px] font-extrabold tracking-[.32em] text-white/90 text-glow"
+              aria-label="Scroll to explore"
+            >
+              SCROLL
+              <span className="relative block h-12 w-px overflow-hidden bg-white/30">
+                <span className="hero-cue-line absolute inset-0 bg-white" />
+              </span>
+            </button>
           </div>
         </section>
 
         {/* Hero Search Bar overlapping hero */}
-        <div className="relative z-2 mx-auto -mt-16 sm:-mt-17 max-w-[1180px] bg-white/90 p-5 sm:p-6 shadow-panel backdrop-blur-md shell">
+        <Reveal immediate delay={900} className="relative z-2 mx-auto -mt-16 sm:-mt-17 max-w-[1180px] bg-white/90 p-5 sm:p-6 shadow-panel backdrop-blur-md shell">
           <div className="mb-4 flex gap-6 border-b border-[#e7eaf0] text-xs font-semibold overflow-x-auto">
             {[ALL_CATEGORIES, 'Coupe', 'SUV', 'Electric'].map((cat) => {
               const active = filters.category === cat;
@@ -363,31 +385,33 @@ export function App() {
               Explore cars <ArrowRight size={17} />
             </button>
           </div>
-        </div>
+        </Reveal>
 
         <ExperienceSection onExplore={scrollToCollection} />
 
+        <MarqueeBand />
+
         {/* Collection Section */}
-        <section id="collection" className="shell scroll-mt-6 pt-20 pb-28">
+        <section id="collection" className="shell scroll-mt-6 pt-16 pb-28">
           <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4 mb-6">
             <div>
-              <span className="eyebrow">
+              <Reveal as="span" className="eyebrow">
                 <span className="h-1.5 w-1.5 rounded-full bg-royal" /> THE COLLECTION
-              </span>
-              <h2 className="mt-3 mb-2 font-display text-3xl sm:text-5xl font-semibold leading-tight tracking-[-.065em] text-ink">
-                Find your next <em className="italic font-normal text-steel">chapter.</em>
-              </h2>
-              <p className="m-0 text-sm text-muted">
+              </Reveal>
+              <RevealWords as="h2" className="mt-3 mb-2 block font-display text-3xl sm:text-5xl font-semibold leading-tight tracking-[-.04em] text-ink">
+                Find your next {<em className="italic font-normal text-steel">chapter.</em>}
+              </RevealWords>
+              <Reveal as="p" delay={200} className="m-0 text-sm text-muted">
                 From city streets to open horizons, discover a vehicle that feels like yours.
-              </p>
+              </Reveal>
             </div>
 
-            <div className="flex flex-col items-start sm:items-end">
+            <Reveal delay={300} className="flex flex-col items-start sm:items-end">
               <span className="text-[9px] font-extrabold tracking-widest text-[#8a97ae]">CURATED VEHICLES</span>
               <b className="font-display text-4xl sm:text-5xl font-medium text-[#263650]">
                 {String(visibleVehicles.length).padStart(2, '0')}
               </b>
-            </div>
+            </Reveal>
           </div>
 
           {/* Toolbar with Price Filters toggle */}
@@ -458,9 +482,9 @@ export function App() {
           {/* Grid of Vehicles or Empty state */}
           {visibleVehicles.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              {visibleVehicles.map((vehicle) => (
+              {visibleVehicles.map((vehicle, index) => (
+                <Reveal key={vehicle.id} delay={(index % 3) * 110} className="[&>article]:h-full">
                 <VehicleCard
-                  key={vehicle.id}
                   vehicle={vehicle}
                   isAdmin={isAdmin}
                   onSelect={(v) => setSelectedVehicle(v)}
@@ -473,6 +497,7 @@ export function App() {
                   onDelete={(v) => setConfirmDelete(v)}
                   busy={busyId === vehicle.id}
                 />
+                </Reveal>
               ))}
             </div>
           ) : (
@@ -490,6 +515,8 @@ export function App() {
             </div>
           )}
         </section>
+
+        <Interlude onExplore={scrollToCollection} />
 
         <AboutSection onExplore={scrollToCollection} />
       </main>
