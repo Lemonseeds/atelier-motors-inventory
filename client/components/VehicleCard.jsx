@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { ArrowRight, ArrowUpRight, CarFront, Gauge } from 'lucide-react';
 import { formatPrice } from '../lib/catalog.js';
+import { VehicleArtwork } from './VehicleArtwork.jsx';
 
 /**
  * Showroom vehicle card with image, category/stock badges,
  * dynamic pricing, and role-based action controls.
  */
-export function VehicleCard({ vehicle, isAdmin, onPurchase, onEdit, onRestock, onDelete, onSelect, busy }) {
+export function VehicleCard({ vehicle, isAdmin, onPurchase, onLearn, onEdit, onRestock, onDelete, onSelect, busy }) {
   const [imageFailed, setImageFailed] = useState(false);
   const isSoldOut = vehicle.quantity === 0;
 
@@ -25,8 +26,8 @@ export function VehicleCard({ vehicle, isAdmin, onPurchase, onEdit, onRestock, o
             onError={() => setImageFailed(true)}
           />
         ) : (
-          <div className="grid h-full w-full place-items-center bg-gradient-to-br from-[#dce5f3] to-[#f5f7fb] text-[#8da1c0]">
-            <CarFront size={72} strokeWidth={1} />
+          <div className="grid h-full w-full place-items-center bg-gradient-to-br from-[#e9edf2] to-[#f7f8f9]">
+            <VehicleArtwork vehicle={vehicle} color="#586b83" className="h-full w-full" />
           </div>
         )}
         <span className="absolute left-3.5 top-3.5 bg-white/90 px-2.5 py-1.5 text-[10px] font-extrabold tracking-wider text-ink backdrop-blur-xs">
@@ -61,6 +62,7 @@ export function VehicleCard({ vehicle, isAdmin, onPurchase, onEdit, onRestock, o
         <p className="mt-2 min-h-[36px] text-xs leading-relaxed text-muted line-clamp-2">
           {vehicle.description || 'A distinctive addition to our curated showroom collection.'}
         </p>
+        {onLearn && <button type="button" className="mt-2 text-xs font-bold text-royal underline underline-offset-4 hover:text-royal-deep" onClick={(event) => { event.stopPropagation(); onLearn(vehicle); }}>Learn about this car</button>}
 
         <div className="my-4 h-px bg-line" />
 
@@ -82,7 +84,7 @@ export function VehicleCard({ vehicle, isAdmin, onPurchase, onEdit, onRestock, o
               onPurchase(vehicle);
             }}
           >
-            {isSoldOut ? 'Unavailable' : 'Purchase'} <ArrowRight size={16} />
+            {isSoldOut ? 'Unavailable' : 'Purchase car'} <ArrowRight size={16} />
           </button>
         </div>
 

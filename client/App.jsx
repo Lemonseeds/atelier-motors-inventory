@@ -18,9 +18,17 @@ import { Modal } from './components/Modal.jsx';
 import { VehicleCard } from './components/VehicleCard.jsx';
 import { VehicleDetailDialog } from './components/VehicleDetailDialog.jsx';
 import { VehicleDialog } from './components/VehicleDialog.jsx';
+import { ShowroomNavigation } from './components/ShowroomNavigation.jsx';
+import { VehicleDesignPage, VehicleLearnPage } from './components/VehiclePages.jsx';
 import { AboutSection, ExperienceSection, Interlude, MarqueeBand } from './components/EditorialSections.jsx';
 import { ALL_CATEGORIES, CATEGORIES, EMPTY_FILTERS, PREVIEW_VEHICLES, filterVehicles, toSearchParams } from './lib/catalog.js';
 import { Reveal, RevealWords, scrollToTarget, useScene, useScrollMotion } from './lib/motion.jsx';
+
+const vehicleSlug = (vehicle) => `${vehicle.make}-${vehicle.model}`.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+function parseVehicleRoute(pathname) {
+  const match = pathname.match(/^\/vehicles\/([a-z0-9-]+)\/(learn|design)\/?$/);
+  return match ? { slug: match[1], page: match[2] } : { slug: null, page: 'home' };
+}
 
 export function App() {
   const [auth, setAuth] = useState(() => {
@@ -44,10 +52,22 @@ export function App() {
   const [busyId, setBusyId] = useState(null);
   const [mobileMenu, setMobileMenu] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [route, setRoute] = useState(() => parseVehicleRoute(window.location.pathname));
+  const [routeVehicle, setRouteVehicle] = useState(null);
 
   const token = auth?.token;
   const user = auth?.user;
   const isAdmin = user?.role === 'admin';
+  const menuVehicles = token ? vehicles : PREVIEW_VEHICLES;
+  const pageVehicle = (token && vehicles.find((vehicle) => vehicleSlug(vehicle) === route.slug))
+    || routeVehicle
+    || [...vehicles, ...PREVIEW_VEHICLES].find((vehicle) => vehicleSlug(vehicle) === route.slug);
+
+  useEffect(() => {
+    const onPopState = () => { setRoute(parseVehicleRoute(window.location.pathname)); setRouteVehicle(null); };
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, []);
 
   useScrollMotion();
   const heroRef = useScene();
@@ -201,6 +221,30 @@ export function App() {
     scrollToTarget('#collection');
   };
 
+  function navigate(page, vehicle) {
+    const path = page === 'home' ? '/' : `/vehicles/${vehicleSlug(vehicle)}/${page}`;
+    window.history.pushState({}, '', path);
+    setRoute({ page, slug: vehicle ? vehicleSlug(vehicle) : null });
+    setRouteVehicle(vehicle || null);
+    setSelectedVehicle(null);
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }
+
+  function navigateSection(target) {
+    if (route.page !== 'home') {
+      navigate('home');
+      window.setTimeout(() => scrollToTarget(target), 80);
+    } else scrollToTarget(target);
+  }
+
+  if (route.page !== 'home' && pageVehicle) return <>
+    <ShowroomNavigation vehicles={menuVehicles} onNavigate={navigate} onSection={navigateSection} home={false} user={user} isAdmin={isAdmin} onSignIn={() => setAuthMode('login')} onSignOut={logout}/>
+    {route.page === 'learn' ? <VehicleLearnPage vehicle={pageVehicle} onBack={() => navigate('home')} onDesign={() => navigate('design', pageVehicle)}/>
+      : <VehicleDesignPage vehicle={pageVehicle} onBack={() => navigate('home')} onLearn={() => navigate('learn', pageVehicle)} onPurchase={purchase} isAuthenticated={Boolean(token)} busy={busyId === pageVehicle.id}/>}
+    {toast && <div className="vehicle-page-toast" role="status">{toast}<button type="button" onClick={() => setToast('')} aria-label="Dismiss notification"><X size={17}/></button></div>}
+    {authMode && <AuthDialog mode={authMode} setMode={setAuthMode} onClose={() => setAuthMode(null)} onSuccess={saveAuth}/>}
+  </>;
+
   return (
     <>
       {/* Reading progress */}
@@ -208,80 +252,7 @@ export function App() {
         <div className="scroll-progress h-full w-full" />
       </div>
 
-      {/* Site Header */}
-      <header className="absolute top-0 left-0 z-10 w-full">
-        <div className="relative mx-auto flex h-[76px] sm:h-[82px] w-[min(1400px,calc(100%-48px))] items-center justify-between border-b border-white/30 px-3 sm:px-7 text-white">
-          <nav
-            className={`${
-              mobileMenu ? 'flex' : 'hidden'
-            } md:flex absolute md:static top-[76px] left-3 right-3 md:top-auto md:left-auto md:right-auto flex-col md:flex-row items-stretch md:items-center gap-2 md:gap-7 bg-mist/95 md:bg-transparent p-4 md:p-0 text-ink md:text-white shadow-panel md:shadow-none backdrop-blur-md md:backdrop-blur-none text-xs font-semibold`}
-            aria-label="Main navigation"
-          >
-            <a href="#collection" onClick={() => setMobileMenu(false)} className="py-2 md:py-0 hover:opacity-100 opacity-85 transition">
-              The Collection
-            </a>
-            <a href="#experience" onClick={() => setMobileMenu(false)} className="py-2 md:py-0 hover:opacity-100 opacity-85 transition">
-              Our Experience
-            </a>
-            <a href="#about" onClick={() => setMobileMenu(false)} className="py-2 md:py-0 hover:opacity-100 opacity-85 transition">
-              About Us
-            </a>
-          </nav>
-
-          <a
-            href="#top"
-            className="md:absolute md:left-1/2 md:-translate-x-1/2 flex items-center gap-2 font-display text-base font-extrabold tracking-[.14em]"
-            aria-label="Atelier Motors home"
-          >
-            <span className="grid h-8 w-8 place-items-center rounded-full border border-current">
-              <CarFront size={20} strokeWidth={1.5} />
-            </span>
-            <span>
-              ATELIER <b className="font-medium">MOTORS</b>
-            </span>
-          </a>
-
-          <div className="flex items-center gap-3">
-            {user ? (
-              <div className="flex items-center gap-2 text-xs">
-                <span className="grid h-7 w-7 place-items-center rounded-full bg-white font-extrabold text-[#253b70]">
-                  {user.name?.[0]?.toUpperCase()}
-                </span>
-                <span className="hidden sm:flex flex-col leading-tight">
-                  <span className="font-bold">{user.name?.split(' ')[0]}</span>
-                  <small className="text-[9px] tracking-widest opacity-80">{isAdmin ? 'ADMIN' : 'MEMBER'}</small>
-                </span>
-                <button
-                  type="button"
-                  onClick={logout}
-                  className="p-1.5 hover:text-white/80 transition"
-                  title="Sign out"
-                  aria-label="Sign out"
-                >
-                  <LogOut size={18} />
-                </button>
-              </div>
-            ) : (
-              <button
-                type="button"
-                className="inline-flex items-center gap-2 bg-white px-3.5 py-2 text-xs font-bold text-[#25334f] transition hover:bg-white/90"
-                onClick={() => setAuthMode('login')}
-              >
-                Sign in <ArrowUpRight size={16} />
-              </button>
-            )}
-
-            <button
-              type="button"
-              className="p-2 md:hidden hover:opacity-80"
-              onClick={() => setMobileMenu(!mobileMenu)}
-              aria-label="Toggle menu"
-            >
-              {mobileMenu ? <X size={22} /> : <Menu size={22} />}
-            </button>
-          </div>
-        </div>
-      </header>
+      <ShowroomNavigation vehicles={menuVehicles} onNavigate={navigate} onSection={navigateSection} home user={user} isAdmin={isAdmin} onSignIn={() => setAuthMode('login')} onSignOut={logout}/>
 
       <main id="top">
         {/* Hero Section: layered parallax — photo sinks, haze drifts, copy lifts away */}
@@ -488,7 +459,8 @@ export function App() {
                   vehicle={vehicle}
                   isAdmin={isAdmin}
                   onSelect={(v) => setSelectedVehicle(v)}
-                  onPurchase={purchase}
+                  onLearn={(v) => navigate('learn', v)}
+                  onPurchase={(v) => navigate('design', v)}
                   onEdit={(v) => setVehicleDialog(v)}
                   onRestock={(v) => {
                     setRestock(v);
@@ -558,7 +530,7 @@ export function App() {
           isAdmin={isAdmin}
           isAuthenticated={Boolean(token)}
           onClose={() => setSelectedVehicle(null)}
-          onPurchase={purchase}
+          onPurchase={(v) => navigate('design', v)}
           onEdit={(v) => {
             setSelectedVehicle(null);
             setVehicleDialog(v);

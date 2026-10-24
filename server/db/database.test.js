@@ -19,6 +19,20 @@ test('seedVehicles fills an empty inventory once and is idempotent', async () =>
   db.close();
 });
 
+test('seedVehicles upgrades an existing three-car showroom without replacing its stock', async () => {
+  const db = createSqliteDatabase(':memory:');
+  const repo = createVehicleRepository(db);
+  const original = await repo.create({ ...sampleVehicles[0], quantity: 1 }, null);
+  await repo.create(sampleVehicles[1], null);
+  await repo.create(sampleVehicles[2], null);
+  await seedVehicles(db);
+  assert.equal((await repo.list()).length, sampleVehicles.length);
+  assert.equal((await repo.findById(original.id)).quantity, 1);
+  await seedVehicles(db);
+  assert.equal((await repo.list()).length, sampleVehicles.length);
+  db.close();
+});
+
 test('vehicle repository search is case-insensitive and maps rows to camelCase', async () => {
   const db = createSqliteDatabase(':memory:');
   const repo = createVehicleRepository(db);

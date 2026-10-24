@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { App } from './App.jsx';
 import { api } from './api.js';
 
@@ -14,6 +15,8 @@ function signInAs(role) {
 
 beforeEach(() => {
   vi.mocked(api).mockReset();
+  window.history.replaceState({}, '', '/');
+  window.scrollTo = vi.fn();
 });
 
 describe('App', () => {
@@ -35,5 +38,17 @@ describe('App', () => {
     signInAs('admin');
     render(<App />);
     expect(await screen.findByRole('button', { name: /add vehicle/i })).toBeInTheDocument();
+  });
+
+  it('navigates from the vehicle menu to a learn page and configurator', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(screen.getByRole('button', { name: /^Vehicles$/ }));
+    expect(screen.getByRole('button', { name: 'Learn about Solenne R8' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Learn about Solenne R8' }));
+    expect(window.location.pathname).toBe('/vehicles/solenne-r8/learn');
+    await user.click(screen.getByRole('button', { name: 'Design yours' }));
+    expect(window.location.pathname).toBe('/vehicles/solenne-r8/design');
+    expect(screen.getByRole('button', { name: 'Carmine Red' })).toBeInTheDocument();
   });
 });
