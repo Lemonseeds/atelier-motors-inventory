@@ -5,14 +5,11 @@ import {
   CarFront,
   Check,
   ChevronDown,
-  Heart,
   LogOut,
   Menu,
   Plus,
   Search,
-  ShieldCheck,
   SlidersHorizontal,
-  Sparkles,
   X,
 } from 'lucide-react';
 import { api } from './api.js';
@@ -21,6 +18,7 @@ import { Modal } from './components/Modal.jsx';
 import { VehicleCard } from './components/VehicleCard.jsx';
 import { VehicleDetailDialog } from './components/VehicleDetailDialog.jsx';
 import { VehicleDialog } from './components/VehicleDialog.jsx';
+import { AboutSection, ExperienceSection } from './components/EditorialSections.jsx';
 import { ALL_CATEGORIES, CATEGORIES, EMPTY_FILTERS, PREVIEW_VEHICLES, filterVehicles, toSearchParams } from './lib/catalog.js';
 
 export function App() {
@@ -367,30 +365,7 @@ export function App() {
           </div>
         </div>
 
-        {/* Trust Badges */}
-        <section id="experience" className="shell grid grid-cols-1 sm:grid-cols-3 gap-5 border-b border-[#dfe5f0] py-10 px-4 text-[#5572ba]">
-          <div className="flex items-center justify-center gap-3.5">
-            <ShieldCheck size={24} />
-            <span className="flex flex-col text-left">
-              <b className="text-xs font-bold text-ink">Thoughtfully selected</b>
-              <small className="text-[11px] text-[#8a94a6]">Every detail considered</small>
-            </span>
-          </div>
-          <div className="flex items-center justify-center gap-3.5">
-            <Sparkles size={24} />
-            <span className="flex flex-col text-left">
-              <b className="text-xs font-bold text-ink">A refined experience</b>
-              <small className="text-[11px] text-[#8a94a6]">From discovery to driveway</small>
-            </span>
-          </div>
-          <div className="flex items-center justify-center gap-3.5">
-            <Heart size={24} />
-            <span className="flex flex-col text-left">
-              <b className="text-xs font-bold text-ink">Driven by passion</b>
-              <small className="text-[11px] text-[#8a94a6]">Vehicles worth loving</small>
-            </span>
-          </div>
-        </section>
+        <ExperienceSection onExplore={scrollToCollection} />
 
         {/* Collection Section */}
         <section id="collection" className="shell scroll-mt-6 pt-20 pb-28">
@@ -516,33 +491,7 @@ export function App() {
           )}
         </section>
 
-        {/* Closing editorial banner */}
-        <section id="about" className="relative flex min-h-[320px] items-center justify-between overflow-hidden bg-midnight px-7 sm:px-14 py-12 text-white shell">
-          <div className="relative z-2 max-w-xl">
-            <span className="eyebrow text-haze">BEYOND THE ORDINARY</span>
-            <h2 className="mt-4 mb-3 font-display text-3xl sm:text-5xl font-semibold leading-tight text-white">
-              Every great story<br />starts with a <em className="italic font-normal text-haze">drive.</em>
-            </h2>
-            <p className="mb-5 text-xs sm:text-sm text-[#c7d1e4]">
-              We believe your vehicle should inspire every mile. Find the one that moves you.
-            </p>
-            <button
-              type="button"
-              onClick={scrollToCollection}
-              className="btn btn-white"
-            >
-              Discover your drive <ArrowUpRight size={18} />
-            </button>
-          </div>
-
-          <div className="pointer-events-none absolute right-0 top-0 grid h-full w-[45%] place-items-center opacity-30 sm:opacity-100 overflow-hidden">
-            <span className="relative z-2 font-display text-[160px] font-extrabold tracking-tighter text-white/5 select-none">
-              AM
-            </span>
-            <div className="absolute h-[380px] w-[380px] rounded-full border border-white/10" />
-            <div className="absolute h-[250px] w-[250px] rounded-full border border-white/10" />
-          </div>
-        </section>
+        <AboutSection onExplore={scrollToCollection} />
       </main>
 
       {/* Footer */}

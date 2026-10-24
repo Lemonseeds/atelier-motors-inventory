@@ -13,6 +13,7 @@ The application is engineered strictly following SOLID principles, complete sepa
 - **Public Repository:** [https://github.com/Lemonseeds/atelier-motors-inventory](https://github.com/Lemonseeds/atelier-motors-inventory)
 - **Test Evidence & Coverage:** [TEST_REPORT.md](TEST_REPORT.md)
 - **Raw AI Chat Logs & Prompts:** [PROMPTS.md](PROMPTS.md)
+- **Proposed AI Assistant Placement:** [CHATBOT_STRATEGY.md](CHATBOT_STRATEGY.md)
 
 ---
 
@@ -47,6 +48,7 @@ The application is engineered strictly following SOLID principles, complete sepa
 - **Styling:** Tailwind CSS v4 using modern `@theme` design tokens for an opaque, royal blue-gray glassmorphic showroom aesthetic.
 - **Icons:** `lucide-react`.
 - **Bundler:** Vite 7.
+- **Editorial content:** The Experience and About sections now explain the browsing journey, brand point of view, listing clarity, and common questions in a layered blue-gray design.
 
 ### Testing & Quality Assurance
 - **Backend Suite:** Node.js native test runner (`node:test`) + `supertest` + `@electric-sql/pglite`.

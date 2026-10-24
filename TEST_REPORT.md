@@ -1,5 +1,7 @@
 # Test report
 
+Frontend content update verification (24 October 2026): `npm run check` passed again after the Experience and About section expansion — 26 server tests, 11 client tests, and a successful Vite production build.
+
 Run on 23 October 2026 with Node.js 22.14.0 on Windows.
 
 ## Test Summary

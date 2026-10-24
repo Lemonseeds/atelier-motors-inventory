@@ -177,6 +177,20 @@ also clicking one of any of these cars doesnt do anything. Make it do something 
 - Updated `VehicleCard` to accept an `onSelect` prop and added `cursor-pointer` with hover transitions across the card, image, and title, while preserving `e.stopPropagation()` on action buttons.
 - Added client unit test in `VehicleCard.test.jsx` verifying that clicking the vehicle card triggers `onSelect` (total test suite now at 37 tests, all passing).
 
+---
+
+### User → Codex (Prompt 11)
+```text
+ok soo that actual content on the website is very less. I want you to add more content. Look at the tesla website for inspiration. MAke the about us page better along with our experience. Add opacity to parts of the website to make it look amazing. After youre done with that i want you to plana and strategize where adding an ai chat bot to the website would be a good idea.
+```
+
+### Codex Actions (Prompt 11)
+- Reviewed Tesla's public About page for its spacious editorial sections and clear content hierarchy, then wrote original Atelier Motors copy.
+- Expanded Our Experience into a visual feature and a three-step browsing journey, and About Us into a mission panel, design principles, and practical FAQs.
+- Used translucent blue-gray overlays and blurred glass panels while retaining the existing vehicle imagery and collection behavior.
+- Wrote a staged AI assistant placement and rollout proposal in `CHATBOT_STRATEGY.md`; no chatbot was implemented in this prompt.
+- Ran the existing backend and frontend tests and a production build.
+
 
 
 
