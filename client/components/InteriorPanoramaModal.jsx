@@ -171,7 +171,11 @@ export function InteriorPanoramaModal({ vehicle, onClose }) {
     };
   }, []);
 
-  // Auto-pan loop
+const PANELS = [-2, -1, 0, 1, 2];
+const PANEL_WIDTH = 1500;
+const CYCLE = 2 * PANEL_WIDTH; // 3000px seamless period
+
+  // Auto-pan loop with seamless 360 degree infinity wrap
   useEffect(() => {
     if (isAutoPanning) {
       let lastTime = performance.now();
@@ -179,8 +183,9 @@ export function InteriorPanoramaModal({ vehicle, onClose }) {
         const dt = (time - lastTime) / 1000;
         lastTime = time;
         setPanX((prev) => {
-          const next = prev - dt * 25; // pan left slowly
-          return next < -300 ? 300 : next;
+          let next = prev - dt * 45; // pan left smoothly
+          if (next <= -CYCLE) next += CYCLE;
+          return next;
         });
         autoPanRef.current = requestAnimationFrame(step);
       };
@@ -193,7 +198,7 @@ export function InteriorPanoramaModal({ vehicle, onClose }) {
     };
   }, [isAutoPanning]);
 
-  // Dragging handlers
+  // Dragging handlers with continuous seamless infinity wrapping
   const handlePointerDown = (e) => {
     setIsDragging(true);
     setIsAutoPanning(false);
@@ -209,12 +214,25 @@ export function InteriorPanoramaModal({ vehicle, onClose }) {
     if (!isDragging) return;
     const dx = e.clientX - dragStartRef.current.x;
     const dy = e.clientY - dragStartRef.current.y;
-    // Bound the pan
-    const maxPanX = 350 * zoom;
-    const maxPanY = 180 * zoom;
-    const newX = Math.max(-maxPanX, Math.min(maxPanX, dragStartRef.current.startPanX + dx));
+
+    // Continuous horizontal cyclic wrap (zero black borders)
+    let targetX = dragStartRef.current.startPanX + dx;
+    while (targetX <= -CYCLE) {
+      targetX += CYCLE;
+      dragStartRef.current.startPanX += CYCLE;
+    }
+    while (targetX >= CYCLE) {
+      targetX -= CYCLE;
+      dragStartRef.current.startPanX -= CYCLE;
+    }
+
+    // Vertical boundary enforcement so top/bottom never reveal empty space
+    const containerH = containerRef.current?.clientHeight || 600;
+    const contentH = containerH * 1.18 * zoom;
+    const maxPanY = Math.max(10, (contentH - containerH) / 2);
     const newY = Math.max(-maxPanY, Math.min(maxPanY, dragStartRef.current.startPanY + dy));
-    setPanX(newX);
+
+    setPanX(targetX);
     setPanY(newY);
   };
 
@@ -326,53 +344,74 @@ export function InteriorPanoramaModal({ vehicle, onClose }) {
               transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)',
             }}
           >
-            <div className="relative w-full h-full min-w-[1200px] min-h-[600px]">
-              <img
-                src={selectedThemeObj.image}
-                alt="Atelier Luxury Interior Cockpit"
-                className="w-full h-full object-cover pointer-events-none"
-                draggable={false}
-              />
-
-              {/* Pulsing Hotspots overlaid on interior */}
-              {COCKPIT_HOTSPOTS.map((hotspot) => {
-                const isActive = activeHotspot?.id === hotspot.id;
+            <div
+              className="relative flex items-center h-[118%] -top-[9%]"
+              style={{ width: `${PANELS.length * PANEL_WIDTH}px` }}
+            >
+              {PANELS.map((pIndex) => {
+                const isMirrored = Math.abs(pIndex) % 2 === 1;
+                const isPrimary = pIndex === 0;
                 return (
-                  <button
-                    key={hotspot.id}
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setActiveHotspot(isActive ? null : hotspot);
-                    }}
-                    style={{ left: `${hotspot.x}%`, top: `${hotspot.y}%` }}
-                    className={`absolute -translate-x-1/2 -translate-y-1/2 z-10 group flex items-center justify-center cursor-pointer transition focus:outline-none`}
-                    aria-label={`Inspect ${hotspot.title}`}
+                  <div
+                    key={pIndex}
+                    className="relative h-full flex-shrink-0 overflow-hidden"
+                    style={{ width: `${PANEL_WIDTH}px` }}
                   >
-                    {/* Pulsing outer aura */}
-                    <span
-                      className={`absolute w-8 h-8 rounded-full transition-transform ${
-                        isActive
-                          ? 'bg-royal/50 scale-125 animate-ping'
-                          : 'bg-white/30 group-hover:bg-royal/40 group-hover:scale-125'
+                    <img
+                      src={selectedThemeObj.image}
+                      alt={isPrimary ? 'Atelier Luxury Interior Cockpit' : ''}
+                      aria-hidden={!isPrimary}
+                      className={`w-full h-full object-cover pointer-events-none select-none ${
+                        isMirrored ? 'scale-x-[-1]' : ''
                       }`}
+                      draggable={false}
                     />
-                    {/* Core icon dot */}
-                    <span
-                      className={`relative w-6 h-6 rounded-full flex items-center justify-center border-2 transition ${
-                        isActive
-                          ? 'bg-royal border-white text-white shadow-lg'
-                          : 'bg-white/90 border-[#20293a] text-ink group-hover:bg-royal group-hover:text-white'
-                      }`}
-                    >
-                      <Sparkles size={11} strokeWidth={2.5} />
-                    </span>
 
-                    {/* Hover tooltip label */}
-                    <span className="absolute top-8 left-1/2 -translate-x-1/2 whitespace-nowrap bg-[#0b1019]/90 text-white text-[10px] font-bold px-2 py-0.5 rounded-2xs border border-[#2b3a50] opacity-0 group-hover:opacity-100 transition pointer-events-none shadow-md">
-                      {hotspot.title}
-                    </span>
-                  </button>
+                    {/* Pulsing Hotspots overlaid on interior */}
+                    {COCKPIT_HOTSPOTS.map((hotspot) => {
+                      const isActive = activeHotspot?.id === hotspot.id;
+                      const posX = isMirrored ? 100 - hotspot.x : hotspot.x;
+                      return (
+                        <button
+                          key={`${pIndex}-${hotspot.id}`}
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActiveHotspot(isActive ? null : hotspot);
+                          }}
+                          style={{ left: `${posX}%`, top: `${hotspot.y}%` }}
+                          className="absolute -translate-x-1/2 -translate-y-1/2 z-10 group flex items-center justify-center cursor-pointer transition focus:outline-none"
+                          aria-label={isPrimary ? `Inspect ${hotspot.title}` : undefined}
+                          aria-hidden={!isPrimary}
+                          tabIndex={isPrimary ? 0 : -1}
+                        >
+                          {/* Pulsing outer aura */}
+                          <span
+                            className={`absolute w-8 h-8 rounded-full transition-transform ${
+                              isActive
+                                ? 'bg-royal/50 scale-125 animate-ping'
+                                : 'bg-white/30 group-hover:bg-royal/40 group-hover:scale-125'
+                            }`}
+                          />
+                          {/* Core icon dot */}
+                          <span
+                            className={`relative w-6 h-6 rounded-full flex items-center justify-center border-2 transition ${
+                              isActive
+                                ? 'bg-royal border-white text-white shadow-lg'
+                                : 'bg-white/90 border-[#20293a] text-ink group-hover:bg-royal group-hover:text-white'
+                            }`}
+                          >
+                            <Sparkles size={11} strokeWidth={2.5} />
+                          </span>
+
+                          {/* Hover tooltip label */}
+                          <span className="absolute top-8 left-1/2 -translate-x-1/2 whitespace-nowrap bg-[#0b1019]/90 text-white text-[10px] font-bold px-2 py-0.5 rounded-2xs border border-[#2b3a50] opacity-0 group-hover:opacity-100 transition pointer-events-none shadow-md">
+                            {hotspot.title}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
                 );
               })}
             </div>
