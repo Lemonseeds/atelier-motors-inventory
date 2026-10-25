@@ -390,4 +390,16 @@ when i pressed reserve test drive it shows invalid json
   - Full test suite passing: 43 backend tests + 52 frontend tests = 95/95 tests passing.
   - Verified clean production build with `npm run build`.
 
+---
+
+### User → Antigravity (Prompt 22)
+```text
+can you revert to the original photo for this one?
+```
+
+### Antigravity Actions (Prompt 22)
+- Restored the pristine original stock hero photo (`public/hero-v2.original.webp`) to `public/hero-v2.webp`, reverting the upscaled user image.
+- Preserved edge-to-edge full bleed hero framing and responsive parallax scrolling.
+- Verified test suite (43 server, 52 client tests, all 95 passing) and clean production build with `npm run build`.
+
 
