@@ -2,6 +2,15 @@ import React, { useEffect, useState } from 'react';
 import { ArrowLeft, ArrowRight, Check, ChevronLeft, ChevronRight, ShieldCheck, Sparkles } from 'lucide-react';
 import { formatPrice } from '../lib/catalog.js';
 import { VehicleArtwork } from './VehicleArtwork.jsx';
+import { modelFor } from '../lib/vehicleModels.js';
+
+const VehicleModel3D = React.lazy(() => import('./VehicleModel3D.jsx').then(({ VehicleModel3D: Component }) => ({ default: Component })));
+
+function ModelPreview(props) {
+  return <React.Suspense fallback={<VehicleArtwork vehicle={props.vehicle} color={props.color} view={props.view} className={props.className}/>}>
+    <VehicleModel3D {...props}/>
+  </React.Suspense>;
+}
 
 const palette = [
   { name: 'Glacier Silver', value: '#9faab5', price: 0 },
@@ -30,6 +39,7 @@ const storyFor = (vehicle) => stories[`${vehicle.make} ${vehicle.model}`] || { l
 
 export function VehicleLearnPage({ vehicle, onBack, onDesign }) {
   const story = storyFor(vehicle);
+  const model = modelFor(vehicle);
   return <main className="vehicle-learn">
     <section className="vehicle-learn-hero">
       <div className="vehicle-learn-copy">
@@ -39,8 +49,9 @@ export function VehicleLearnPage({ vehicle, onBack, onDesign }) {
         <p>{story.line}</p>
         <div className="vehicle-learn-actions"><button type="button" className="vehicle-solid-button" onClick={onDesign}>Design yours <ArrowRight size={18}/></button><span>From {formatPrice(vehicle.price)}</span></div>
       </div>
-      <div className="vehicle-learn-art"><VehicleArtwork vehicle={vehicle} color="#5d6c7d" className="w-full h-full" /></div>
+      <div className="vehicle-learn-art"><ModelPreview vehicle={vehicle} color="#5d6c7d" view="front" className="w-full h-full" /></div>
       <span className="vehicle-learn-number">{String(vehicle.id).padStart(2, '0')} / THE COLLECTION</span>
+      {model && <ModelCredit model={model} className="vehicle-learn-credit"/>}
     </section>
     <section className="vehicle-learn-story shell">
       <div><span className="vehicle-kicker">THE EXPERIENCE</span><h2>Every detail,<br/><em>considered.</em></h2></div>
@@ -59,6 +70,7 @@ export function VehicleDesignPage({ vehicle, onBack, onLearn, onPurchase, isAuth
   const [details, setDetails] = useState(false);
   const [zip, setZip] = useState('');
   const total = vehicle.price + palette[paint].price + (trim ? 4500 : 0) + (interior ? 1500 : 0);
+  const model = modelFor(vehicle);
 
   useEffect(() => { setAngle(0); setPaint(0); setTrim(0); setInterior(0); }, [vehicle.id]);
   const advance = (delta) => setAngle((value) => (value + delta + views.length) % views.length);
@@ -66,9 +78,10 @@ export function VehicleDesignPage({ vehicle, onBack, onLearn, onPurchase, isAuth
   return <main className="vehicle-design">
     <div className="vehicle-design-stage">
       <div className="vehicle-design-top"><button type="button" className="vehicle-back" onClick={onBack}><ArrowLeft size={17}/> Vehicles</button><span>DESIGN YOUR {vehicle.make.toUpperCase()} {vehicle.model.toUpperCase()}</span><button type="button" onClick={onLearn}>Learn about this car <ArrowRight size={15}/></button></div>
-      <div className="vehicle-design-image" key={`${vehicle.id}-${angle}`}><VehicleArtwork vehicle={vehicle} color={palette[paint].value} view={views[angle].key} className="w-full h-full"/></div>
+      <div className="vehicle-design-image"><ModelPreview vehicle={vehicle} color={palette[paint].value} view={views[angle].key} interior={interior} trim={trim} className="w-full h-full"/></div>
       <div className="vehicle-design-view-label"><span>{String(angle + 1).padStart(2, '0')} / {String(views.length).padStart(2, '0')}</span><strong>{views[angle].label}</strong></div>
       <div className="vehicle-design-carousel"><button type="button" onClick={() => advance(-1)} aria-label="Previous view"><ChevronLeft size={21}/></button><div className="vehicle-design-dots" role="group" aria-label="Vehicle views">{views.map((view, i) => <button key={view.key} type="button" onClick={() => setAngle(i)} className={angle === i ? 'is-active' : ''} aria-label={`Show ${view.label}`} aria-current={angle === i ? 'true' : undefined}/>)}</div><button type="button" onClick={() => advance(1)} aria-label="Next view"><ChevronRight size={21}/></button></div>
+      {model && <ModelCredit model={model} className="vehicle-design-credit"/>}
     </div>
     <aside className="vehicle-design-options">
       <div className="vehicle-design-intro"><span className="vehicle-kicker">MAKE IT YOURS</span><h1>{vehicle.make} <em>{vehicle.model}</em></h1><p>{vehicle.year} {vehicle.category} · {vehicle.quantity > 0 ? `${vehicle.quantity} available` : 'Currently unavailable'}</p></div>
@@ -79,4 +92,10 @@ export function VehicleDesignPage({ vehicle, onBack, onLearn, onPurchase, isAuth
       <div className="vehicle-design-checkout"><label htmlFor="delivery-zip">Delivery ZIP <span>Optional</span></label><input id="delivery-zip" value={zip} onChange={(event) => setZip(event.target.value.replace(/\D/g, '').slice(0, 5))} inputMode="numeric" autoComplete="postal-code" placeholder="Enter ZIP"/><p><ShieldCheck size={17}/> A member of our team will confirm delivery and payment details.</p><button type="button" className="vehicle-solid-button" disabled={busy || vehicle.quantity === 0} onClick={() => onPurchase(vehicle)}>{vehicle.quantity === 0 ? 'Currently unavailable' : isAuthenticated ? 'Confirm purchase' : 'Sign in to continue'} <ArrowRight size={18}/></button><small>Selection and pricing are shown for this showroom experience. Final terms are confirmed directly with Atelier Motors.</small></div>
     </aside>
   </main>;
+}
+
+function ModelCredit({ model, className = '' }) {
+  return <p className={`vehicle-model-credit ${className}`}>
+    Concept visualization adapted from <a href={model.credit.url} target="_blank" rel="noreferrer">{model.credit.title}</a> by {model.credit.author} · <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noreferrer">CC BY 4.0</a>
+  </p>;
 }
