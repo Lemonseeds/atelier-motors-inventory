@@ -83,6 +83,39 @@ test('assistant routes queries to Groq LLM when groqApiKey is provided', async (
   assert.equal(capturedBody.messages[1].content, 'Which car would be the best for me?');
 });
 
+test('assistant preserves multi-turn conversation history with Groq', async () => {
+  let capturedBody;
+  const mockFetch = async (_url, options) => {
+    capturedBody = JSON.parse(options.body);
+    return {
+      ok: true,
+      json: async () => ({
+        choices: [{ message: { content: 'For speed, the Aurelia GT S is our top coupe.' } }],
+      }),
+    };
+  };
+
+  const groqApp = createApp(db, {
+    assistantOptions: {
+      groqApiKey: 'gsk_test_mock_key',
+      fetchFn: mockFetch,
+    },
+  });
+
+  const response = await request(groqApp).post('/api/assistant').send({
+    message: 'i want it for speed',
+    history: [
+      { role: 'user', content: 'which cars is the best for me??' },
+      { role: 'assistant', content: 'What are your driving preferences?' },
+    ],
+  });
+  assert.equal(response.status, 200);
+  assert.equal(capturedBody.messages.length, 4);
+  assert.equal(capturedBody.messages[1].content, 'which cars is the best for me??');
+  assert.equal(capturedBody.messages[2].content, 'What are your driving preferences?');
+  assert.equal(capturedBody.messages[3].content, 'i want it for speed');
+});
+
 test('assistant gracefully falls back to local engine if Groq call fails', async () => {
   const failingFetch = async () => ({
     ok: false,

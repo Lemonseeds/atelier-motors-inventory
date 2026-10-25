@@ -149,10 +149,14 @@ export function CompanyAssistant() {
     const message = raw.trim();
     if (!message || busy) return;
     setDraft('');
+    const history = messages
+      .slice(1)
+      .map((m) => ({ role: m.role, content: m.text }));
     setMessages((current) => [...current, { role: 'user', text: message }]);
     setBusy(true);
     try {
-      const result = await api('/assistant', { method: 'POST', body: JSON.stringify({ message }) });
+      const payload = history.length > 0 ? { message, history } : { message };
+      const result = await api('/assistant', { method: 'POST', body: JSON.stringify(payload) });
       setMessages((current) => [...current, { role: 'assistant', text: result.answer }]);
     } catch {
       setMessages((current) => [...current, { role: 'assistant', text: 'I could not check the showroom knowledge just now. Please try again.' }]);

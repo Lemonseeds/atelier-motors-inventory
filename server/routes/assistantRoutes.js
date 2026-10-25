@@ -40,13 +40,33 @@ STRICT CONCIERGE GUIDELINES:
 2. Keep answers concise, helpful, and elegant (2–4 sentences or clean bullet points). Do not write huge walls of text.
 3. Ground all specifications, prices, and stock numbers strictly in the LIVE INVENTORY above. Never invent cars or specs.
 4. If asked about financing, delivery terms, or physical showroom addresses, cite our official policies above (e.g. an Atelier Motors team member confirms payment and delivery directly; online card payments are not processed).
-5. If a question is completely unrelated to Atelier Motors, vehicles, or the buying/customizing process (e.g. general trivia, coding, other topics), politely decline with: "${assistantBoundary}".`;
+5. If a question is completely unrelated to Atelier Motors, vehicles, or the buying/customizing process (e.g. general trivia, coding, other topics), politely decline with: "${assistantBoundary}".
+6. CONVERSATION CONTEXT & FOLLOW-UPS:
+   - Always maintain conversational context from preceding turns in the chat history.
+   - If the user provides a brief answer or preference (e.g. "i want it for speed", "performance", "which ones??", "family car", "budget under 90k"), immediately present the concrete matching models from our live inventory with exact prices and stock.
+   - Never get stuck in an endless loop asking clarifying questions if the user has already expressed their priority. Name the cars directly!`;
 }
 
-export async function askGroq({ question, vehicles, apiKey, model = process.env.GROQ_MODEL || 'openai/gpt-oss-120b', fetchFn = globalThis.fetch }) {
+export async function askGroq({
+  question,
+  vehicles,
+  apiKey,
+  model = process.env.GROQ_MODEL || 'openai/gpt-oss-120b',
+  history = [],
+  fetchFn = globalThis.fetch,
+}) {
   const systemPrompt = buildGroqSystemPrompt(vehicles);
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 8000);
+  const timeout = setTimeout(() => controller.abort(), 12000);
+
+  const formattedMessages = [
+    { role: 'system', content: systemPrompt },
+    ...history.slice(-8).map((h) => ({
+      role: h.role === 'assistant' ? 'assistant' : 'user',
+      content: String(h.content || h.text || '').slice(0, 500),
+    })),
+    { role: 'user', content: question },
+  ];
 
   try {
     const response = await fetchFn('https://api.groq.com/openai/v1/chat/completions', {
@@ -57,12 +77,9 @@ export async function askGroq({ question, vehicles, apiKey, model = process.env.
       },
       body: JSON.stringify({
         model,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: question },
-        ],
+        messages: formattedMessages,
         temperature: 0.4,
-        max_completion_tokens: 350,
+        max_completion_tokens: 800,
       }),
       signal: controller.signal,
     });
@@ -87,14 +104,26 @@ export function localAnswer(question, vehicles) {
   const inDomain = Boolean(car) ||
     domainWords.some((word) => inText(text, word)) ||
     /\b(?:car|cars|vehicle|vehicles|model|models|suv|suvs|coupe|coupes|sedan|sedans|convertible|convertibles|ev|electric|hybrid)\b/.test(text) ||
-    /\b(?:recommend|suggest|recommendation|advice|choose|pick|best)\b/.test(text) ||
-    /delivery zip|family|spacious/.test(text);
+    /\b(?:recommend|suggest|recommendation|advice|choose|pick|best|speed|fast|sport|sports|performance|track|quick|acceleration)\b/.test(text) ||
+    /delivery zip|family|spacious|which ones/.test(text);
   if (!inDomain) return { answer: assistantBoundary, source: null };
   if (/ignore (all |the )?(previous|instructions)|jailbreak|system prompt/.test(text)) return { answer: assistantBoundary, source: null };
 
   if (/(?:which|what) (?:car|vehicle|model) (?:would be |is )?(?:the )?best|recommend|suggest|what should i (?:buy|choose|get)|help me (?:choose|pick|find)/.test(text)) {
     return {
       answer: 'The best car depends on your driving style and needs:\n• For everyday space & family versatility: Northline Summit X ($94,200) or Meridian LX ($78,500)\n• For electric innovation: Eon Lucent ($88,900) or Eon Arc ($74,600)\n• For grand touring & open-road exhilaration: Aurelia GT S ($89,400) or convertible Solenne R8 ($96,800)\n• For executive composure: Vesper S2 ($68,200)\n\nTell me your preferred body style, budget, or daily driving needs to narrow it down.',
+      source: 'recommendation',
+    };
+  }
+  if (/speed|fast|sport|sports|performance|track|acceleration|quick/.test(text)) {
+    return {
+      answer: 'For pure speed and exhilarating performance, our standout model is the Aurelia GT S ($89,400), an agile twin-turbo coupe engineered for open-road response, alongside the open-air Solenne R8 ($96,800).',
+      source: 'recommendation',
+    };
+  }
+  if (/which ones|which one|what are they|tell me more/.test(text)) {
+    return {
+      answer: 'Our showroom offers 7 distinguished models across performance coupes (Aurelia GT S, Solenne R8), luxury SUVs (Northline Summit X, Meridian LX), electric vehicles (Eon Lucent, Eon Arc), and executive sedans (Vesper S2). Tell me your preferred style or budget to explore further.',
       source: 'recommendation',
     };
   }
@@ -142,6 +171,12 @@ export function createAssistantRouter({ vehicles, groqApiKey = process.env.GROQ_
   router.post('/', async (req, res) => {
     const question = req.body?.message;
     if (typeof question !== 'string' || question.trim().length < 2 || question.length > 300) return res.status(400).json({ error: 'Enter a question of 2–300 characters.' });
+    const rawHistory = Array.isArray(req.body?.history) ? req.body.history : [];
+    const history = rawHistory
+      .slice(-8)
+      .filter((h) => h && (h.role === 'user' || h.role === 'assistant') && (typeof h.content === 'string' || typeof h.text === 'string'))
+      .map((h) => ({ role: h.role, content: String(h.content || h.text || '').slice(0, 500) }));
+
     const key = req.ip || 'unknown';
     const now = Date.now();
     const recent = (hits.get(key) || []).filter((time) => now - time < 60_000);
@@ -153,7 +188,7 @@ export function createAssistantRouter({ vehicles, groqApiKey = process.env.GROQ_
     const apiKey = groqApiKey || process.env.GROQ_API_KEY;
     if (apiKey) {
       try {
-        const groqAnswer = await askGroq({ question, vehicles: inventory, apiKey, model: groqModel, fetchFn });
+        const groqAnswer = await askGroq({ question, vehicles: inventory, apiKey, model: groqModel, history, fetchFn });
         return res.json({ answer: groqAnswer, source: 'groq' });
       } catch (err) {
         console.warn('Groq assistant fallback:', err.message);
