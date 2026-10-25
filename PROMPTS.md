@@ -371,3 +371,23 @@ i cant scoll here and same with the quiz. Could you add a scroll wheel to each o
   - Verified full test suite passing: 43 backend tests + 49 frontend tests = 92/92 tests passing.
   - Verified clean production build with `npm run build`.
 
+---
+
+### User → Antigravity (Prompt 21)
+```text
+when i pressed reserve test drive it shows invalid json
+```
+
+### Antigravity Actions (Prompt 21)
+- **Root Cause Diagnosis:**
+  - `TestDriveModal.jsx` passed an unstringified plain JavaScript object `{ vehicleId, preferredDate, timeWindow, experienceType, location }` as `options.body` to `api('/test-drives', ...)`.
+  - In `client/api.js`, `fetch` was called with `body: options.body`. In browser environments, passing a plain object to native `fetch` invokes `Object.prototype.toString()`, sending `[object Object]` with header `Content-Type: application/json`.
+  - Express's `express.json()` middleware attempted `JSON.parse("[object Object]")`, throwing `SyntaxError: Unexpected token 'o', "[object Object]" is not valid JSON`, which triggered Express's error handler in `server/app.js` line 39 returning status 400 with `{ error: 'Invalid JSON.' }`.
+- **Architectural Solution & Implementation:**
+  - Updated `client/api.js` to automatically detect plain object bodies (`typeof options.body === 'object' && !(options.body instanceof FormData)`) and serialize them via `JSON.stringify()`, while preserving pre-stringified JSON strings, FormDatas, or undefined bodies.
+  - Added unit test suite `client/api.test.js` verifying automatic JSON serialization, pre-stringified bodies, authorization headers, and error handling.
+- **Testing & Verification:**
+  - Full test suite passing: 43 backend tests + 52 frontend tests = 95/95 tests passing.
+  - Verified clean production build with `npm run build`.
+
+
