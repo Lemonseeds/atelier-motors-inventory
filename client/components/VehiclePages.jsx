@@ -35,11 +35,27 @@ const stories = {
   'Meridian LX': { line: 'A new perspective on possibility.', detail: 'A spacious SUV with quiet presence, crafted for the places you know and the ones you have yet to discover.', features: ['Expansive cabin', 'Confident stance', 'Refined versatility'] },
   'Eon Arc': { line: 'A spark in every turn.', detail: 'Electric driving meets a distinctly personal spirit, wrapped in a sleek, purposeful form.', features: ['Electric response', 'Expressive design', 'Focused interior'] },
 };
+const featureDetails = {
+  'Aurelia GT S': ['A long, low body gives the GT S its poised grand touring silhouette.', 'The cabin places the driver at the center of every journey.', 'Careful surfaces and restrained details carry through the exterior and cabin.'],
+  'Northline Summit X': ['A generous SUV shape leaves space for passengers and the day ahead.', 'The taller seating position opens up the view of the road.', 'Its balanced proportions suit both city streets and longer escapes.'],
+  'Eon Lucent': ['A streamlined electric form keeps the design clean and purposeful.', 'The cabin is shaped as a calm place to travel.', 'Unbroken lines bring movement to the profile even at rest.'],
+  'Solenne R8': ['The open roof brings the road and surroundings closer.', 'A low stance gives the R8 its athletic presence.', 'A close, focused seating area puts the drive first.'],
+  'Vesper S2': ['A spacious sedan shape makes room for unhurried journeys.', 'Its flowing roofline gives the profile a sculptural quality.', 'Subtle exterior details create a composed presence.'],
+  'Meridian LX': ['A roomy cabin gives every passenger space to settle in.', 'Strong proportions lend the LX a confident road presence.', 'The adaptable SUV form is ready for different journeys.'],
+  'Eon Arc': ['The electric coupe pairs immediate character with a low stance.', 'Sharp lines make the Arc expressive from every angle.', 'The compact cabin keeps attention on the drive.'],
+};
 const storyFor = (vehicle) => stories[`${vehicle.make} ${vehicle.model}`] || { line: 'Made for the way you move.', detail: vehicle.description || 'Discover a distinctive addition to the Atelier Motors collection.', features: ['Thoughtful design', 'A refined interior', 'The joy of the drive'] };
 
 export function VehicleLearnPage({ vehicle, onBack, onDesign }) {
   const story = storyFor(vehicle);
   const model = modelFor(vehicle);
+  const [activeFeature, setActiveFeature] = useState(null);
+  useEffect(() => setActiveFeature(null), [vehicle.id]);
+  const details = featureDetails[`${vehicle.make} ${vehicle.model}`] || [
+    'Explore the shape and character of this vehicle in the configurator.',
+    'Take a closer look at the cabin and its available finishes.',
+    'See how the details come together from every angle.',
+  ];
   return <main className="vehicle-learn">
     <section className="vehicle-learn-hero">
       <div className="vehicle-learn-copy">
@@ -55,9 +71,9 @@ export function VehicleLearnPage({ vehicle, onBack, onDesign }) {
     </section>
     <section className="vehicle-learn-story shell">
       <div><span className="vehicle-kicker">THE EXPERIENCE</span><h2>Every detail,<br/><em>considered.</em></h2></div>
-      <div><p>{story.detail}</p><div className="vehicle-learn-features">{story.features.map((feature, i) => <div key={feature}><span>0{i + 1}</span><strong>{feature}</strong><ArrowRight size={17}/></div>)}</div></div>
+      <div><p>{story.detail}</p><div className="vehicle-learn-features">{story.features.map((feature, i) => <div key={feature} className={activeFeature === i ? 'is-open' : ''}><button type="button" aria-expanded={activeFeature === i} aria-controls={`vehicle-feature-${vehicle.id}-${i}`} onClick={() => setActiveFeature(activeFeature === i ? null : i)}><span>0{i + 1}</span><strong>{feature}</strong><ArrowRight size={17}/></button><div id={`vehicle-feature-${vehicle.id}-${i}`} className="vehicle-feature-detail" hidden={activeFeature !== i}><p>{details[i]}</p></div></div>)}</div></div>
     </section>
-    <section className="vehicle-learn-gallery shell"><div className="vehicle-learn-gallery-copy"><span className="vehicle-kicker">FORM & FUNCTION</span><h2>A different angle<br/>on what moves you.</h2><p>Explore the shape of your next chapter, then make it yours.</p><button type="button" className="vehicle-text-button" onClick={onDesign}>Explore the configurator <ArrowRight size={18}/></button></div><div className="vehicle-learn-side"><VehicleArtwork vehicle={vehicle} color="#5d6c7d" view="side" className="w-full h-full"/></div></section>
+    <section className="vehicle-learn-gallery shell"><div className="vehicle-learn-gallery-copy"><span className="vehicle-kicker">FORM & FUNCTION</span><h2>A different angle<br/>on what moves you.</h2><p>Explore the shape of your next chapter, then make it yours.</p><button type="button" className="vehicle-text-button" onClick={onDesign}>Explore the configurator <ArrowRight size={18}/></button></div><div className="vehicle-learn-side"><ModelPreview vehicle={vehicle} color="#5d6c7d" view="side" className="w-full h-full"/></div></section>
     <section className="vehicle-learn-end"><span>YOUR NEXT CHAPTER STARTS HERE</span><h2>Make it yours.</h2><button type="button" className="vehicle-solid-button" onClick={onDesign}>Design {vehicle.make} {vehicle.model} <ArrowRight size={18}/></button></section>
   </main>;
 }

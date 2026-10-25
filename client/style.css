@@ -272,9 +272,15 @@ html.lenis, html.lenis body { height: auto; }
 .vehicle-learn-story { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; padding-top: 130px; padding-bottom: 130px; }
 .vehicle-learn-story h2, .vehicle-learn-gallery h2, .vehicle-learn-end h2 { margin: 22px 0 0; font: 600 clamp(38px, 4.5vw, 70px)/1.05 var(--font-display); letter-spacing: -.06em; }
 .vehicle-learn-story p { max-width: 570px; margin: 32px 0 55px; font-size: 19px; color: #5f6b73; line-height: 1.7; }
-.vehicle-learn-features div { display: flex; align-items: center; gap: 25px; padding: 20px 0; border-top: 1px solid #c9ced0; }
-.vehicle-learn-features div:last-child { border-bottom: 1px solid #c9ced0; }
+.vehicle-learn-features > div { border-top: 1px solid #c9ced0; }
+.vehicle-learn-features > div:last-child { border-bottom: 1px solid #c9ced0; }
+.vehicle-learn-features button { display: flex; align-items: center; gap: 25px; width: 100%; padding: 20px 0; text-align: left; cursor: pointer; }
+.vehicle-learn-features button:hover strong, .vehicle-learn-features button:focus-visible strong { text-decoration: underline; text-underline-offset: 5px; }
+.vehicle-learn-features button:focus-visible { outline: 2px solid #273847; outline-offset: 2px; }
+.vehicle-learn-features button svg { transition: transform .25s ease; }
+.vehicle-learn-features .is-open button svg { transform: rotate(90deg); }
 .vehicle-learn-features span { color: #8d979d; font-size: 11px; }.vehicle-learn-features strong { flex: 1; font-size: 17px; font-weight: 600; }
+.vehicle-learn-features .vehicle-feature-detail p { margin: 0 0 24px 36px; max-width: 460px; color: #5f6b73; font-size: 15px; line-height: 1.6; }
 .vehicle-learn-gallery { display: grid; grid-template-columns: 40% 60%; align-items: center; min-height: 480px; background: #e8ebeb; }
 .vehicle-learn-gallery-copy { padding: 60px; }.vehicle-learn-gallery-copy p { max-width: 300px; margin: 20px 0; color: #627079; }
 .vehicle-text-button { display: inline-flex; align-items: center; gap: 12px; padding: 8px 0; border: 0; border-bottom: 1px solid #222e39; background: none; font-weight: 800; font-size: 12px; }

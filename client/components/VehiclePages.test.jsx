@@ -13,6 +13,20 @@ describe('vehicle experiences', () => {
     expect(screen.getByText(/Designed to make every road/)).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: /Design yours/i }));
     expect(onDesign).toHaveBeenCalledOnce();
+    expect(await screen.findByRole('img', { name: /Aurelia GT S, side view/i })).toBeInTheDocument();
+  });
+
+  it('opens and closes learn-page feature details', async () => {
+    const northline = { ...vehicle, id: 2, make: 'Northline', model: 'Summit X', category: 'SUV' };
+    render(<VehicleLearnPage vehicle={northline} onDesign={vi.fn()} onBack={vi.fn()}/>);
+    const feature = screen.getByRole('button', { name: /Room to roam/i });
+    expect(feature).toHaveAttribute('aria-expanded', 'false');
+    await userEvent.click(feature);
+    expect(feature).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByText(/space for passengers and the day ahead/i)).toBeVisible();
+    await userEvent.click(feature);
+    expect(feature).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.getByText(/space for passengers and the day ahead/i)).not.toBeVisible();
   });
 
   it('switches actual vehicle views and paint color and recalculates the configured price', async () => {
