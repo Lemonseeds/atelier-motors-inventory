@@ -282,7 +282,7 @@ export function App() {
 
       <main id="top">
         {/* Hero Section: layered parallax — photo sinks, haze drifts, copy lifts away */}
-        <section ref={heroRef} data-scene className="relative h-[min(760px,92vh)] min-h-[600px] overflow-hidden bg-[#8ba5ca] shell">
+        <section ref={heroRef} data-scene className="relative h-[min(760px,92vh)] min-h-[600px] overflow-hidden bg-[#8ba5ca] w-full">
           <img
             className="hero-media will-move absolute inset-0 h-full w-full object-cover object-[center_58%] sm:object-[center_58%]"
             src="/hero-v2.webp"
@@ -290,8 +290,8 @@ export function App() {
             fetchPriority="high"
           />
           <div className="hero-scrim absolute inset-0" />
-          <div className="hero-haze will-move pointer-events-none absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-mist/70 via-mist/10 to-transparent" />
-          <div className="hero-copy will-move relative z-1 flex h-full flex-col items-center pt-28 sm:pt-32 text-center text-white">
+          <div className="hero-haze will-move pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-mist/35 via-mist/5 to-transparent" />
+          <div className="hero-copy will-move relative z-1 flex h-full flex-col items-center pt-28 sm:pt-32 text-center text-white px-4">
             <Reveal immediate delay={150} variant="fade" className="text-[10px] font-extrabold tracking-[.28em] text-glow">
               THE ART OF DRIVING, REIMAGINED
             </Reveal>

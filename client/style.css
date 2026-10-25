@@ -79,9 +79,9 @@
   .field-label { @apply flex flex-col gap-[7px] text-[11px] font-extrabold text-[#526078]; }
   .field-input { @apply w-full border border-[#dfe4ec] bg-[#f8f9fc] px-[13px] py-3 text-[13px] font-medium text-ink outline-none transition focus:border-[#6480e5] focus:bg-white; }
 
-  /* Soft sky-to-mist wash over the hero photo keeps the white headline legible. */
+  /* Soft sky-to-mist wash over the hero photo keeps the white headline legible without washing out the car. */
   .hero-scrim {
-    background: linear-gradient(180deg, rgb(39 67 114 / 0.34) 0%, rgb(53 89 147 / 0.13) 41%, rgb(225 234 248 / 0.05) 73%, rgb(229 236 248 / 0.4) 100%);
+    background: linear-gradient(180deg, rgb(20 40 75 / 0.30) 0%, rgb(35 60 100 / 0.08) 38%, transparent 65%, rgb(240 244 249 / 0.18) 100%);
   }
   .text-glow { text-shadow: 0 1px 12px #718aaf; }
 }
@@ -112,7 +112,7 @@ html.lenis, html.lenis body { height: auto; }
   }
 
   /* ---- Hero: image sinks slowly, copy lifts away faster, creating depth ---- */
-  .hero-media { transform: translate3d(0, calc(var(--exit) * 32%), 0) scale(calc(1.06 + var(--exit) * 0.1)); }
+  .hero-media { transform: translate3d(0, calc(var(--exit) * 28%), 0) scale(calc(1.01 + var(--exit) * 0.08)); }
   .hero-haze  { transform: translate3d(0, calc(var(--exit) * 12%), 0); opacity: calc(0.85 + var(--exit) * 0.6); }
   .hero-copy  { transform: translate3d(0, calc(var(--exit) * -140px), 0); opacity: calc(1 - var(--exit) * 1.9); }
   .hero-cue   { opacity: calc(1 - var(--exit) * 4); }
