@@ -6,6 +6,7 @@ import { createUserRepository } from './repositories/userRepository.js';
 import { createVehicleRepository } from './repositories/vehicleRepository.js';
 import { createAuthRouter } from './routes/authRoutes.js';
 import { createVehicleRouter } from './routes/vehicleRoutes.js';
+import { createAssistantRouter } from './routes/assistantRoutes.js';
 
 /**
  * Composes the Express application. The database is injected so tests can use
@@ -25,6 +26,7 @@ export function createApp(db, { clientDist } = {}) {
   app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
   app.use('/api/auth', createAuthRouter({ users, requireAuth }));
   app.use('/api/vehicles', createVehicleRouter({ vehicles, requireAuth }));
+  app.use('/api/assistant', createAssistantRouter({ vehicles }));
   app.use('/api', (_req, res) => res.status(404).json({ error: 'Not found.' }));
 
   if (clientDist && existsSync(clientDist)) serveSpa(app, clientDist);

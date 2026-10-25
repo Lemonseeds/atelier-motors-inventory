@@ -19,6 +19,7 @@ import { VehicleCard } from './components/VehicleCard.jsx';
 import { VehicleDetailDialog } from './components/VehicleDetailDialog.jsx';
 import { VehicleDialog } from './components/VehicleDialog.jsx';
 import { ShowroomNavigation } from './components/ShowroomNavigation.jsx';
+import { CompanyAssistant } from './components/CompanyAssistant.jsx';
 import { VehicleDesignPage, VehicleLearnPage } from './components/VehiclePages.jsx';
 import { AboutSection, ExperienceSection, Interlude, MarqueeBand } from './components/EditorialSections.jsx';
 import { ALL_CATEGORIES, CATEGORIES, EMPTY_FILTERS, PREVIEW_VEHICLES, filterVehicles, toSearchParams } from './lib/catalog.js';
@@ -239,6 +240,7 @@ export function App() {
 
   if (route.page !== 'home' && pageVehicle) return <>
     <ShowroomNavigation vehicles={menuVehicles} onNavigate={navigate} onSection={navigateSection} home={false} user={user} isAdmin={isAdmin} onSignIn={() => setAuthMode('login')} onSignOut={logout}/>
+    <CompanyAssistant/>
     {route.page === 'learn' ? <VehicleLearnPage vehicle={pageVehicle} onBack={() => navigate('home')} onDesign={() => navigate('design', pageVehicle)}/>
       : <VehicleDesignPage vehicle={pageVehicle} onBack={() => navigate('home')} onLearn={() => navigate('learn', pageVehicle)} onPurchase={purchase} isAuthenticated={Boolean(token)} busy={busyId === pageVehicle.id}/>}
     {toast && <div className="vehicle-page-toast" role="status">{toast}<button type="button" onClick={() => setToast('')} aria-label="Dismiss notification"><X size={17}/></button></div>}
@@ -253,6 +255,7 @@ export function App() {
       </div>
 
       <ShowroomNavigation vehicles={menuVehicles} onNavigate={navigate} onSection={navigateSection} home user={user} isAdmin={isAdmin} onSignIn={() => setAuthMode('login')} onSignOut={logout}/>
+      <CompanyAssistant/>
 
       <main id="top">
         {/* Hero Section: layered parallax — photo sinks, haze drifts, copy lifts away */}
