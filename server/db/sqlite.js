@@ -44,6 +44,7 @@ export function schemaSql(idColumn) {
       id ${idColumn},
       user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
       vehicle_id INTEGER NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE,
+      quantity INTEGER NOT NULL DEFAULT 1,
       vin TEXT NOT NULL,
       status TEXT NOT NULL DEFAULT 'confirmed' CHECK (status IN ('confirmed', 'handcrafting', 'inspection', 'transit', 'delivered')),
       configuration TEXT NOT NULL DEFAULT '{}',
@@ -68,5 +69,7 @@ export function createSqliteDatabase(path) {
   db.exec(schemaSql('INTEGER PRIMARY KEY AUTOINCREMENT'));
   try { db.exec("ALTER TABLE test_drives ADD COLUMN experience_type TEXT NOT NULL DEFAULT 'Showroom'"); } catch {}
   try { db.exec("ALTER TABLE test_drives ADD COLUMN location TEXT NOT NULL DEFAULT 'Atelier Flagship'"); } catch {}
+  try { db.exec("ALTER TABLE orders ADD COLUMN quantity INTEGER NOT NULL DEFAULT 1"); } catch {}
   return db;
 }
+

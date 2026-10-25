@@ -31,19 +31,23 @@ test('assistant provides smart matchmaking recommendations in local mode', async
   const best = await request(app).post('/api/assistant').send({ message: 'Which car would be the best for me?' });
   assert.equal(best.status, 200);
   assert.equal(best.body.source, 'recommendation');
-  assert.match(best.body.answer, /Northline Summit X/);
-  assert.match(best.body.answer, /Aurelia GT S/);
+  assert.match(best.body.answer, /Northline Summit X \(\$76,200\)/);
+  assert.match(best.body.answer, /Meridian LX \(\$96,300\)/);
+  assert.match(best.body.answer, /Aurelia GT S \(\$89,400\)/);
+  assert.match(best.body.answer, /Solenne R8 \(\$112,500\)/);
+  assert.match(best.body.answer, /Vesper S2 \(\$78,500\)/);
 
   const family = await request(app).post('/api/assistant').send({ message: 'I need a spacious car for my family' });
   assert.equal(family.status, 200);
   assert.equal(family.body.source, 'recommendation');
-  assert.match(family.body.answer, /Northline Summit X/);
-  assert.match(family.body.answer, /Meridian LX/);
+  assert.match(family.body.answer, /Northline Summit X \(\$76,200\)/);
+  assert.match(family.body.answer, /Meridian LX \(\$96,300\)/);
 
   const ev = await request(app).post('/api/assistant').send({ message: 'What electric cars do you have?' });
   assert.equal(ev.status, 200);
   assert.equal(ev.body.source, 'recommendation');
-  assert.match(ev.body.answer, /Eon Lucent/);
+  assert.match(ev.body.answer, /Eon Lucent \(\$68,500\)/);
+  assert.match(ev.body.answer, /Eon Arc \(\$82,400\)/);
 });
 
 test('assistant routes queries to Groq LLM when groqApiKey is provided', async () => {

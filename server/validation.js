@@ -94,6 +94,35 @@ export function parseSearchFilters(query = {}) {
   if (value.minPrice !== undefined && value.maxPrice !== undefined && value.minPrice > value.maxPrice) {
     return { error: 'Minimum price cannot exceed maximum price.' };
   }
+
+  if (query.sortBy !== undefined && query.sortBy !== '') {
+    const validSortFields = ['price', 'year', 'make', 'model', 'category', 'quantity', 'created_at', 'createdAt'];
+    if (!validSortFields.includes(query.sortBy)) {
+      return { error: `Invalid sortBy field. Allowed: ${validSortFields.join(', ')}.` };
+    }
+    value.sortBy = query.sortBy;
+  }
+
+  if (query.sortOrder !== undefined && query.sortOrder !== '') {
+    const order = String(query.sortOrder).toLowerCase();
+    if (order !== 'asc' && order !== 'desc') {
+      return { error: "sortOrder must be 'asc' or 'desc'." };
+    }
+    value.sortOrder = order;
+  }
+
+  if (query.page !== undefined && query.page !== '') {
+    const p = Number(query.page);
+    if (!Number.isInteger(p) || p < 1) return { error: 'page must be a positive integer.' };
+    value.page = p;
+  }
+
+  if (query.limit !== undefined && query.limit !== '') {
+    const l = Number(query.limit);
+    if (!Number.isInteger(l) || l < 1 || l > 100) return { error: 'limit must be between 1 and 100.' };
+    value.limit = l;
+  }
+
   return { value };
 }
 

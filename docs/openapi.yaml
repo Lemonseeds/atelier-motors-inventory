@@ -1,0 +1,334 @@
+openapi: 3.0.3
+info:
+  title: Atelier Motors Inventory API
+  description: >
+    Production REST API for Atelier Motors luxury vehicle inventory management,
+    client reservations, bespoke ordering, and AI concierge guidance.
+  version: 1.0.0
+  contact:
+    name: Ayrton (Lemonseeds)
+    email: ayrtonjoep@gmail.com
+servers:
+  - url: https://atelier-motors-inventory.onrender.com
+    description: Production Cloud (Render)
+  - url: http://localhost:3001
+    description: Local Development Server
+
+paths:
+  /api/health:
+    get:
+      summary: Health check
+      description: Returns service availability status.
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              example: { "status": "ok" }
+
+  /api/auth/register:
+    post:
+      summary: Register a new account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email, password]
+              properties:
+                name: { type: string, example: "Taylor Morgan" }
+                email: { type: string, format: email, example: "taylor@example.com" }
+                password: { type: string, format: password, minLength: 10, example: "StrongPass123!" }
+      responses:
+        '201':
+          description: User registered successfully
+        '400':
+          description: Validation error
+        '409':
+          description: Email already registered
+
+  /api/auth/login:
+    post:
+      summary: Authenticate with email and password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string, format: password }
+      responses:
+        '200':
+          description: Login successful with JWT-like bearer token
+        '401':
+          description: Invalid email or password
+
+  /api/auth/me:
+    get:
+      summary: Get current authenticated user profile
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: User profile
+        '401':
+          description: Unauthorized
+
+  /api/vehicles:
+    get:
+      summary: List vehicles with optional filtering, sorting and pagination
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: q
+          in: query
+          schema: { type: string }
+          description: Text search over make and model
+        - name: make
+          in: query
+          schema: { type: string }
+        - name: category
+          in: query
+          schema: { type: string }
+        - name: minPrice
+          in: query
+          schema: { type: number }
+        - name: maxPrice
+          in: query
+          schema: { type: number }
+        - name: sortBy
+          in: query
+          schema:
+            type: string
+            enum: [price, year, make, model, category, quantity, created_at]
+          description: Column to sort by
+        - name: sortOrder
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+          description: Sort direction (default desc)
+        - name: page
+          in: query
+          schema: { type: integer, minimum: 1 }
+          description: Page number for pagination
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 100 }
+          description: Number of vehicles per page
+      responses:
+        '200':
+          description: Vehicle collection
+        '400':
+          description: Invalid filter or pagination parameters
+    post:
+      summary: Add a new vehicle to inventory
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VehicleInput'
+      responses:
+        '201':
+          description: Vehicle created
+
+  /api/vehicles/{id}:
+    put:
+      summary: Update a vehicle listing
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VehicleInput'
+      responses:
+        '200':
+          description: Vehicle updated
+        '403':
+          description: Forbidden (only admin or vehicle creator)
+        '404':
+          description: Vehicle not found
+    delete:
+      summary: Delete a vehicle (Admin only)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '204':
+          description: Vehicle deleted
+        '403':
+          description: Admin privileges required
+
+  /api/vehicles/{id}/purchase:
+    post:
+      summary: Purchase one or more units of a vehicle
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                quantity: { type: integer, minimum: 1, default: 1 }
+                totalPrice: { type: number }
+                deliveryAddress: { type: string }
+                configuration: { type: object }
+      responses:
+        '200':
+          description: Purchase successful, returns updated vehicle and generated order
+        '409':
+          description: Sold out or insufficient stock
+
+  /api/vehicles/{id}/restock:
+    post:
+      summary: Restock vehicle inventory (Admin only)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [quantity]
+              properties:
+                quantity: { type: integer, minimum: 1 }
+      responses:
+        '200':
+          description: Stock increased
+
+  /api/orders:
+    get:
+      summary: List user orders (or all orders if admin)
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Order list with stage tracking and VIN
+
+  /api/orders/{id}/status:
+    patch:
+      summary: Advance order status stage (Admin only)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status:
+                  type: string
+                  enum: [confirmed, handcrafting, inspection, transit, delivered]
+      responses:
+        '200':
+          description: Status updated
+
+  /api/test-drives:
+    get:
+      summary: List test drive reservations
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Scheduled test drives
+    post:
+      summary: Book a private test drive appointment
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [vehicleId, preferredDate, timeWindow]
+              properties:
+                vehicleId: { type: integer }
+                preferredDate: { type: string, format: date }
+                timeWindow: { type: string, enum: [Morning, Afternoon, Evening] }
+                experienceType: { type: string, enum: [Showroom, Home Concierge] }
+                location: { type: string }
+      responses:
+        '201':
+          description: Test drive appointment created
+
+  /api/assistant/chat:
+    post:
+      summary: Query the Atelier AI Concierge
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [message]
+              properties:
+                message: { type: string }
+                history:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      role: { type: string, enum: [user, assistant] }
+                      content: { type: string }
+      responses:
+        '200':
+          description: Concierge answer with grounding source and latency
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: HMAC-SHA256
+
+  schemas:
+    VehicleInput:
+      type: object
+      required: [make, model, category, year, price, quantity]
+      properties:
+        make: { type: string, example: "Aurelia" }
+        model: { type: string, example: "GT S" }
+        category: { type: string, example: "Coupe" }
+        year: { type: integer, example: 2025 }
+        price: { type: number, example: 89400 }
+        quantity: { type: integer, example: 3 }
+        imageUrl: { type: string, example: "/coupe.webp" }
+        description: { type: string, example: "Handcrafted grand tourer." }

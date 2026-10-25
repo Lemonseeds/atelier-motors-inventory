@@ -13,7 +13,20 @@ export function createVehicleRouter({ vehicles, db, requireAuth }) {
   async function listVehicles(req, res) {
     const { value: filters, error } = parseSearchFilters(req.query);
     if (error) return res.status(400).json({ error });
-    res.json({ vehicles: await vehicles.list(filters) });
+    const items = await vehicles.list(filters);
+    if (filters.page !== undefined || filters.limit !== undefined) {
+      const total = await vehicles.count(filters);
+      const limit = filters.limit || (items.length || 10);
+      const page = filters.page || 1;
+      return res.json({
+        vehicles: items,
+        total,
+        page,
+        limit,
+        totalPages: limit > 0 ? Math.ceil(total / limit) : 1,
+      });
+    }
+    res.json({ vehicles: items });
   }
 
   router.get('/', listVehicles);
@@ -43,10 +56,24 @@ export function createVehicleRouter({ vehicles, db, requireAuth }) {
   });
 
   router.post('/:id/purchase', parseVehicleId, async (req, res) => {
-    const vehicle = await vehicles.purchase(req.vehicleId);
+    let quantity = 1;
+    if (req.body && req.body.quantity !== undefined) {
+      const q = Number(req.body.quantity);
+      if (!Number.isInteger(q) || q < 1) {
+        return res.status(400).json({ error: 'Quantity must be a positive whole number.' });
+      }
+      quantity = q;
+    }
+
+    const vehicle = await vehicles.purchase(req.vehicleId, quantity);
     if (!vehicle) {
       const exists = await vehicles.findById(req.vehicleId);
-      return res.status(exists ? 409 : 404).json({ error: exists ? 'This vehicle is sold out.' : 'Vehicle not found.' });
+      if (!exists) return res.status(404).json({ error: 'Vehicle not found.' });
+      return res.status(409).json({
+        error: exists.quantity > 0
+          ? `Insufficient stock. Only ${exists.quantity} unit(s) remaining.`
+          : 'This vehicle is sold out.',
+      });
     }
 
     let order = null;
@@ -57,12 +84,12 @@ export function createVehicleRouter({ vehicles, db, requireAuth }) {
         estDate.setDate(estDate.getDate() + 14);
         const estDelivery = estDate.toISOString().slice(0, 10);
         const config = req.body?.configuration ? JSON.stringify(req.body.configuration) : '{}';
-        const totalPrice = Number(req.body?.totalPrice) || vehicle.price;
+        const totalPrice = Number(req.body?.totalPrice) || (vehicle.price * quantity);
         const address = req.body?.deliveryAddress || '';
 
         const row = await db.prepare(
-          'INSERT INTO orders (user_id, vehicle_id, vin, status, configuration, total_price, delivery_address, estimated_delivery) VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING *'
-        ).get(req.user.id, vehicle.id, vin, 'confirmed', config, totalPrice, address, estDelivery);
+          'INSERT INTO orders (user_id, vehicle_id, quantity, vin, status, configuration, total_price, delivery_address, estimated_delivery) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING *'
+        ).get(req.user.id, vehicle.id, quantity, vin, 'confirmed', config, totalPrice, address, estDelivery);
         order = row;
       } catch (e) {
         // Safe fallback in test isolates

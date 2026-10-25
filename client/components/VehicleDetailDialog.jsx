@@ -17,36 +17,42 @@ import {
   Zap
 } from 'lucide-react';
 import { Modal } from './Modal.jsx';
-import { formatPrice } from '../lib/catalog.js';
+import { formatPrice, MODEL_SPECS } from '../lib/catalog.js';
 import { PaymentCalculator } from './PaymentCalculator.jsx';
 
 /**
- * Curated luxury specifications generator based on vehicle category
+ * Grounded specifications resolver using verified model technical data.
  */
 function getVehicleSpecs(vehicle) {
+  const fullName = `${vehicle.make} ${vehicle.model}`;
+  const custom = MODEL_SPECS[fullName] || MODEL_SPECS[vehicle.model];
+  if (custom) {
+    const list = [
+      { label: 'Powertrain', value: custom.powertrain, icon: Cpu },
+      { label: '0–60 MPH', value: custom.acceleration, icon: Gauge },
+    ];
+    if (custom.range) list.push({ label: 'Range', value: custom.range, icon: Zap });
+    if (custom.drivetrain) list.push({ label: 'Drivetrain', value: custom.drivetrain, icon: CarFront });
+    if (custom.transmission && list.length < 4) list.push({ label: 'Transmission', value: custom.transmission, icon: Sparkles });
+    if (custom.suspension && list.length < 4) list.push({ label: 'Suspension', value: custom.suspension, icon: Sparkles });
+    if (custom.roof && list.length < 4) list.push({ label: 'Architecture', value: custom.roof, icon: Sparkles });
+    return list.slice(0, 4);
+  }
+
   const cat = (vehicle.category || '').toLowerCase();
   if (cat.includes('electric')) {
     return [
-      { label: 'Powertrain', value: 'Dual-Motor Electric', icon: Zap },
-      { label: '0–60 MPH', value: '3.1 seconds', icon: Gauge },
-      { label: 'Range', value: '340 mi EPA Est.', icon: Cpu },
-      { label: 'Drivetrain', value: 'Instant All-Wheel Drive', icon: CarFront }
+      { label: 'Powertrain', value: 'Permanent-Magnet Electric', icon: Zap },
+      { label: 'Acceleration', value: 'Instant EV Torque', icon: Gauge },
+      { label: 'Category', value: vehicle.category, icon: CarFront },
+      { label: 'Drivetrain', value: 'Electric All-Wheel Drive', icon: CarFront },
     ];
   }
-  if (cat.includes('suv')) {
-    return [
-      { label: 'Powertrain', value: '3.5L Twin-Turbo V6', icon: Cpu },
-      { label: '0–60 MPH', value: '4.2 seconds', icon: Gauge },
-      { label: 'Drivetrain', value: 'Intelligent AWD System', icon: CarFront },
-      { label: 'Suspension', value: 'Adaptive Air Suspension', icon: Sparkles }
-    ];
-  }
-  // Coupe or performance sports
   return [
-    { label: 'Powertrain', value: '4.0L Handcrafted Twin-Turbo', icon: Cpu },
-    { label: '0–60 MPH', value: '3.4 seconds', icon: Gauge },
-    { label: 'Transmission', value: '8-Speed Dual-Clutch', icon: Sparkles },
-    { label: 'Drivetrain', value: 'Sport Tuned RWD', icon: CarFront }
+    { label: 'Category', value: vehicle.category, icon: CarFront },
+    { label: 'Model Year', value: String(vehicle.year), icon: Calendar },
+    { label: 'Available Stock', value: `${vehicle.quantity} Available`, icon: Sparkles },
+    { label: 'Drivetrain', value: cat.includes('suv') ? 'All-Wheel Drive' : 'Rear-Wheel Drive', icon: CarFront },
   ];
 }
 
@@ -137,20 +143,20 @@ export function VehicleDetailDialog({
           </div>
         </div>
 
-        {/* Showroom Guarantees */}
+        {/* Showroom Principles & Certified Inspection */}
         <div className="rounded bg-[#f9fafc] p-3.5 border border-[#e8ecf2] text-xs text-[#526075]">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
             <div className="flex items-center gap-2">
               <CheckCircle2 size={16} className="text-[#3c825b] shrink-0" />
-              <span>150-Point Master Certified</span>
+              <span>Multi-Point Technical Inspection</span>
             </div>
             <div className="flex items-center gap-2">
               <ShieldCheck size={16} className="text-[#3c825b] shrink-0" />
-              <span>4-Year / 50K Mi Atelier Care</span>
+              <span>Manufacturer Warranty Coverage</span>
             </div>
             <div className="flex items-center gap-2">
               <KeyRound size={16} className="text-[#3c825b] shrink-0" />
-              <span>Complimentary Concierge Delivery</span>
+              <span>Private Handover by Concierge</span>
             </div>
           </div>
         </div>

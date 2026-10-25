@@ -34,6 +34,7 @@ export function createOrderRouter({ db, requireAuth }) {
           id: Number(r.id),
           userId: Number(r.user_id),
           vehicleId: Number(r.vehicle_id),
+          quantity: Number(r.quantity || 1),
           vin: r.vin,
           status: r.status,
           configuration: config,

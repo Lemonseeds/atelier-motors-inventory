@@ -49,11 +49,35 @@ function buildFilterClause(filters) {
 }
 
 export function createVehicleRepository(db) {
+  const SORT_COLUMNS = {
+    price: 'price',
+    year: 'year',
+    make: 'make',
+    model: 'model',
+    category: 'category',
+    quantity: 'quantity',
+    created_at: 'created_at',
+    createdAt: 'created_at',
+  };
+
   return {
-    /** Lists vehicles matching optional filters, newest first. */
+    /** Lists vehicles matching optional filters with pagination and sorting support. */
     async list(filters = {}) {
       const { where, params } = buildFilterClause(filters);
-      const rows = await db.prepare(`SELECT * FROM vehicles ${where} ORDER BY created_at DESC, id DESC`).all(...params);
+      const sortColumn = SORT_COLUMNS[filters.sortBy] || 'created_at';
+      const sortOrder = filters.sortOrder?.toLowerCase() === 'asc' ? 'ASC' : 'DESC';
+      const orderClause = `ORDER BY ${sortColumn} ${sortOrder}, id DESC`;
+
+      let limitClause = '';
+      const queryParams = [...params];
+      if (filters.limit) {
+        limitClause = ' LIMIT ? OFFSET ?';
+        const page = filters.page && filters.page > 0 ? filters.page : 1;
+        const offset = (page - 1) * filters.limit;
+        queryParams.push(filters.limit, offset);
+      }
+
+      const rows = await db.prepare(`SELECT * FROM vehicles ${where} ${orderClause}${limitClause}`).all(...queryParams);
       return rows.map(toVehicle);
     },
 
@@ -61,8 +85,9 @@ export function createVehicleRepository(db) {
       return toVehicle(await db.prepare('SELECT * FROM vehicles WHERE id = ?').get(id));
     },
 
-    async count() {
-      const row = await db.prepare('SELECT COUNT(*) AS total FROM vehicles').get();
+    async count(filters = {}) {
+      const { where, params } = buildFilterClause(filters);
+      const row = await db.prepare(`SELECT COUNT(*) AS total FROM vehicles ${where}`).get(...params);
       return Number(row.total);
     },
 
@@ -90,11 +115,13 @@ export function createVehicleRepository(db) {
     },
 
     /**
-     * Sells one unit. The conditional UPDATE is atomic, so two concurrent
-     * buyers can never both purchase the last unit. Returns null if sold out or missing.
+     * Sells units atomically. The conditional UPDATE ensures concurrent
+     * buyers can never oversell remaining stock. Returns null if insufficient stock or missing.
      */
-    async purchase(id) {
-      const row = await db.prepare('UPDATE vehicles SET quantity = quantity - 1 WHERE id = ? AND quantity > 0 RETURNING *').get(id);
+    async purchase(id, quantity = 1) {
+      const row = await db.prepare(
+        'UPDATE vehicles SET quantity = quantity - ? WHERE id = ? AND quantity >= ? RETURNING *'
+      ).get(quantity, id, quantity);
       return toVehicle(row);
     },
 

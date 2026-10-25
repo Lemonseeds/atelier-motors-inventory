@@ -1,6 +1,10 @@
 # Atelier Motors assistant knowledge base
 
-The public assistant answers only from `server/companyKnowledge.js` and current vehicle records in the showroom database. It makes no external AI request and needs no API key. If it cannot match a company or vehicle fact, it declines the question.
+The public showroom assistant operates with strict policy grounding in a resilient dual mode:
+- **Local Engine (Default):** Evaluates queries purely against `server/companyKnowledge.js` and live vehicle records in the database. Operates completely offline with zero external network requests and needs no API key.
+- **Groq Cloud LLM (Optional):** When `GROQ_API_KEY` is configured, queries route to `llama-3.3-70b-versatile` over RAG live inventory and approved policies. If any external call encounters rate limits, timeouts, or network failures, the server automatically falls back to the deterministic local engine.
+
+In both modes, out-of-scope trivia and unauthorized policy inventions are politely declined.
 
 ## Company facts
 

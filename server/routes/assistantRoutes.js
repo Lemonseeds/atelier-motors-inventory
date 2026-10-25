@@ -12,6 +12,12 @@ function namedVehicle(text, vehicles) {
   return vehicles.find((vehicle) => inText(text, vehicle.make) && vehicles.filter((item) => item.make === vehicle.make).length === 1) || null;
 }
 
+export function formatVehicleMention(vehicles, modelQuery, fallbackName, fallbackPrice) {
+  const found = vehicles.find((v) => `${v.make} ${v.model}`.toLowerCase().includes(modelQuery.toLowerCase()) || v.model.toLowerCase().includes(modelQuery.toLowerCase()));
+  if (found) return `${found.make} ${found.model} (${money.format(found.price)})`;
+  return `${fallbackName}${fallbackPrice ? ` (${money.format(fallbackPrice)})` : ''}`;
+}
+
 export function buildGroqSystemPrompt(vehicles) {
   const inventoryList = vehicles.map((v) =>
     `- ${v.make} ${v.model} (${v.year}): Category: ${v.category}, Starting Price: ${money.format(v.price)}, Stock: ${v.quantity} available. Description: ${v.description}`
@@ -21,9 +27,17 @@ export function buildGroqSystemPrompt(vehicles) {
     `- ${k.id.toUpperCase()}: ${k.answer}`
   ).join('\n');
 
+  const aurelia = formatVehicleMention(vehicles, 'Aurelia GT S', 'Aurelia GT S', 89400);
+  const solenne = formatVehicleMention(vehicles, 'Solenne R8', 'Solenne R8', 112500);
+  const summit = formatVehicleMention(vehicles, 'Northline Summit X', 'Northline Summit X', 76200);
+  const meridian = formatVehicleMention(vehicles, 'Meridian LX', 'Meridian LX', 96300);
+  const lucent = formatVehicleMention(vehicles, 'Eon Lucent', 'Eon Lucent', 68500);
+  const arc = formatVehicleMention(vehicles, 'Eon Arc', 'Eon Arc', 82400);
+  const vesper = formatVehicleMention(vehicles, 'Vesper S2', 'Vesper S2', 78500);
+
   return `You are the Atelier Assistant, an intelligent, poised, and articulate digital showroom concierge for Atelier Motors.
 
-LIVE SHOWROOM INVENTORY (7 MODELS):
+LIVE SHOWROOM INVENTORY (${vehicles.length} MODELS):
 ${inventoryList}
 
 OFFICIAL COMPANY POLICIES & INFORMATION:
@@ -32,11 +46,11 @@ ${policies}
 STRICT CONCIERGE GUIDELINES:
 1. When asked recommendation or matchmaking questions (e.g. "which car is best for me?", "what car do you recommend?", "I need a family car"):
    - Actively match on their driving priorities, lifestyle, space, or budget.
-   - Summarize the top matching choices from our catalog by lifestyle:
-     • Grand touring & performance: Aurelia GT S ($89,400) or convertible Solenne R8 ($96,800)
-     • Spacious luxury SUV & family: Northline Summit X ($94,200) or Meridian LX ($78,500)
-     • Advanced electric driving: Eon Lucent sedan ($88,900) or Eon Arc coupe ($74,600)
-     • Understated executive sedan: Vesper S2 ($68,200)
+   - Summarize the top matching choices from our live catalog by lifestyle:
+     • Grand touring & performance: ${aurelia} or convertible ${solenne}
+     • Spacious luxury SUV & family: ${summit} or ${meridian}
+     • Advanced electric driving: ${lucent} sedan or ${arc} coupe
+     • Understated executive sedan: ${vesper}
 2. Keep answers concise, helpful, and elegant (2–4 sentences or clean bullet points). Do not write huge walls of text.
 3. Ground all specifications, prices, and stock numbers strictly in the LIVE INVENTORY above. Never invent cars or specs.
 4. If asked about financing, delivery terms, or physical showroom addresses, cite our official policies above (e.g. an Atelier Motors team member confirms payment and delivery directly; online card payments are not processed).
@@ -51,7 +65,7 @@ export async function askGroq({
   question,
   vehicles,
   apiKey,
-  model = process.env.GROQ_MODEL || 'openai/gpt-oss-120b',
+  model = process.env.GROQ_MODEL || 'llama-3.3-70b-versatile',
   history = [],
   fetchFn = globalThis.fetch,
 }) {
@@ -109,33 +123,41 @@ export function localAnswer(question, vehicles) {
   if (!inDomain) return { answer: assistantBoundary, source: null };
   if (/ignore (all |the )?(previous|instructions)|jailbreak|system prompt/.test(text)) return { answer: assistantBoundary, source: null };
 
+  const aurelia = formatVehicleMention(vehicles, 'Aurelia GT S', 'Aurelia GT S', 89400);
+  const solenne = formatVehicleMention(vehicles, 'Solenne R8', 'Solenne R8', 112500);
+  const summit = formatVehicleMention(vehicles, 'Northline Summit X', 'Northline Summit X', 76200);
+  const meridian = formatVehicleMention(vehicles, 'Meridian LX', 'Meridian LX', 96300);
+  const lucent = formatVehicleMention(vehicles, 'Eon Lucent', 'Eon Lucent', 68500);
+  const arc = formatVehicleMention(vehicles, 'Eon Arc', 'Eon Arc', 82400);
+  const vesper = formatVehicleMention(vehicles, 'Vesper S2', 'Vesper S2', 78500);
+
   if (/(?:which|what) (?:car|vehicle|model) (?:would be |is )?(?:the )?best|recommend|suggest|what should i (?:buy|choose|get)|help me (?:choose|pick|find)/.test(text)) {
     return {
-      answer: 'The best car depends on your driving style and needs:\n• For everyday space & family versatility: Northline Summit X ($94,200) or Meridian LX ($78,500)\n• For electric innovation: Eon Lucent ($88,900) or Eon Arc ($74,600)\n• For grand touring & open-road exhilaration: Aurelia GT S ($89,400) or convertible Solenne R8 ($96,800)\n• For executive composure: Vesper S2 ($68,200)\n\nTell me your preferred body style, budget, or daily driving needs to narrow it down.',
+      answer: `The best car depends on your driving style and needs:\n• For everyday space & family versatility: ${summit} or ${meridian}\n• For electric innovation: ${lucent} or ${arc}\n• For grand touring & open-road exhilaration: ${aurelia} or convertible ${solenne}\n• For executive composure: ${vesper}\n\nTell me your preferred body style, budget, or daily driving needs to narrow it down.`,
       source: 'recommendation',
     };
   }
   if (/speed|fast|sport|sports|performance|track|acceleration|quick/.test(text)) {
     return {
-      answer: 'For pure speed and exhilarating performance, our standout model is the Aurelia GT S ($89,400), an agile twin-turbo coupe engineered for open-road response, alongside the open-air Solenne R8 ($96,800).',
+      answer: `For pure speed and exhilarating performance, our standout model is the ${aurelia}, an agile twin-turbo coupe engineered for open-road response, alongside the open-air ${solenne}.`,
       source: 'recommendation',
     };
   }
   if (/which ones|which one|what are they|tell me more/.test(text)) {
     return {
-      answer: 'Our showroom offers 7 distinguished models across performance coupes (Aurelia GT S, Solenne R8), luxury SUVs (Northline Summit X, Meridian LX), electric vehicles (Eon Lucent, Eon Arc), and executive sedans (Vesper S2). Tell me your preferred style or budget to explore further.',
+      answer: `Our showroom offers ${vehicles.length} distinguished models across performance coupes (Aurelia GT S, Solenne R8), luxury SUVs (Northline Summit X, Meridian LX), electric vehicles (Eon Lucent, Eon Arc), and executive sedans (Vesper S2). Tell me your preferred style or budget to explore further.`,
       source: 'recommendation',
     };
   }
   if (/family|kids|spacious|space|cargo|luggage|road trip/.test(text)) {
     return {
-      answer: 'For family comfort and cargo space, we recommend our two luxury SUVs: the Northline Summit X ($94,200) with commanding perspective and generous room, or the Meridian LX ($78,500) offering refined versatility with an expansive cabin.',
+      answer: `For family comfort and cargo space, we recommend our two luxury SUVs: the ${summit} with commanding perspective and generous room, or the ${meridian} offering refined versatility with an expansive cabin.`,
       source: 'recommendation',
     };
   }
   if (/electric|ev|battery|clean energy|eco/.test(text)) {
     return {
-      answer: 'For electric driving, explore the Eon Lucent ($88,900) for a quiet, fluid luxury sedan experience, or the Eon Arc ($74,600) for responsive all-electric coupe performance.',
+      answer: `For electric driving, explore the ${lucent} for a quiet, fluid luxury sedan experience, or the ${arc} for responsive all-electric coupe performance.`,
       source: 'recommendation',
     };
   }
@@ -165,7 +187,7 @@ export function localAnswer(question, vehicles) {
 }
 
 /** Public, bounded chat route. Uses Groq Cloud LLM when configured, with local smart recommendation fallback. */
-export function createAssistantRouter({ vehicles, groqApiKey = process.env.GROQ_API_KEY, groqModel = process.env.GROQ_MODEL || 'openai/gpt-oss-120b', fetchFn = globalThis.fetch }) {
+export function createAssistantRouter({ vehicles, groqApiKey = process.env.GROQ_API_KEY, groqModel = process.env.GROQ_MODEL || 'llama-3.3-70b-versatile', fetchFn = globalThis.fetch }) {
   const router = Router();
   const hits = new Map();
   router.post('/', async (req, res) => {
