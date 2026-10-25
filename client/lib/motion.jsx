@@ -37,19 +37,37 @@ function measure() {
   frameRequested = false;
   const vh = window.innerHeight || 1;
   const root = document.documentElement;
-  const scrollable = Math.max(1, root.scrollHeight - vh);
-  writeVar(root, '--page-progress', clamp(window.scrollY / scrollable));
+  const scrollY = window.scrollY;
+  const scrollHeight = root.scrollHeight;
+  const scrollable = Math.max(1, scrollHeight - vh);
+  const pageProgress = clamp(scrollY / scrollable);
 
+  // Phase 1: Batch all DOM reads first to eliminate layout thrashing
+  const updates = [];
   for (const el of scenes) {
     const rect = el.getBoundingClientRect();
     // Skip scenes far outside the viewport; their last written state is already at rest.
     if (rect.bottom < -vh * 0.5 || rect.top > vh * 1.5) continue;
 
-    writeVar(el, '--progress', clamp((vh - rect.top) / (vh + rect.height)));
-    writeVar(el, '--center', clamp((rect.top + rect.height / 2 - vh / 2) / (vh / 2 + rect.height / 2), -1, 1));
-    writeVar(el, '--enter', clamp((vh - rect.top) / (vh * 0.75)));
-    writeVar(el, '--exit', clamp(-rect.top / Math.max(1, rect.height)));
-    writeVar(el, '--pin', clamp(-rect.top / Math.max(1, rect.height - vh)));
+    updates.push({
+      el,
+      progress: clamp((vh - rect.top) / (vh + rect.height)),
+      center: clamp((rect.top + rect.height / 2 - vh / 2) / (vh / 2 + rect.height / 2), -1, 1),
+      enter: clamp((vh - rect.top) / (vh * 0.75)),
+      exit: clamp(-rect.top / Math.max(1, rect.height)),
+      pin: clamp(-rect.top / Math.max(1, rect.height - vh)),
+    });
+  }
+
+  // Phase 2: Batch all DOM writes together
+  writeVar(root, '--page-progress', pageProgress);
+  for (let i = 0; i < updates.length; i++) {
+    const u = updates[i];
+    writeVar(u.el, '--progress', u.progress);
+    writeVar(u.el, '--center', u.center);
+    writeVar(u.el, '--enter', u.enter);
+    writeVar(u.el, '--exit', u.exit);
+    writeVar(u.el, '--pin', u.pin);
   }
 }
 
@@ -63,7 +81,7 @@ function requestMeasure() {
 export function scrollToTarget(target, offset = -24) {
   const el = typeof target === 'string' ? document.querySelector(target) : target;
   if (!el) return;
-  if (lenis) lenis.scrollTo(el, { offset, duration: 1.5 });
+  if (lenis) lenis.scrollTo(el, { offset, duration: 1.2 });
   else el.scrollIntoView({ behavior: 'smooth' });
 }
 
@@ -80,9 +98,9 @@ export function useScrollMotion() {
     try {
       lenis = new Lenis({
         autoRaf: true,
-        lerp: 0.085,
-        wheelMultiplier: 0.95,
-        anchors: { offset: -24, duration: 1.5 },
+        lerp: 0.12,
+        wheelMultiplier: 1.0,
+        anchors: { offset: -24, duration: 1.2 },
       });
       lenis.on('scroll', requestMeasure);
 

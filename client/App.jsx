@@ -322,7 +322,7 @@ export function App() {
         </section>
 
         {/* Hero Search Bar overlapping hero */}
-        <Reveal immediate delay={900} className="relative z-2 mx-auto -mt-16 sm:-mt-17 max-w-[1180px] bg-white/90 p-5 sm:p-6 shadow-panel backdrop-blur-md shell">
+        <Reveal immediate delay={900} className="relative z-2 mx-auto -mt-16 sm:-mt-17 max-w-[1180px] bg-white/95 p-5 sm:p-6 shadow-panel backdrop-blur-sm shell">
           <div className="mb-4 flex gap-6 border-b border-[#e7eaf0] text-xs font-semibold overflow-x-auto">
             {[ALL_CATEGORIES, 'Coupe', 'SUV', 'Electric'].map((cat) => {
               const active = filters.category === cat;

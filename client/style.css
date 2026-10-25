@@ -102,7 +102,7 @@ html.lenis, html.lenis body { height: auto; }
 [data-scene] { --progress: 0.5; --center: 0; --enter: 1; --exit: 0; --pin: 0; }
 
 @layer components {
-  .will-move { will-change: transform; backface-visibility: hidden; }
+  .will-move { will-change: transform; backface-visibility: hidden; transform: translateZ(0); }
 
   /* Reading progress bar */
   .scroll-progress {
@@ -159,7 +159,6 @@ html.lenis, html.lenis body { height: auto; }
     --t: clamp(0, (var(--pin) - var(--at)) * 7, 1);
     opacity: var(--t);
     transform: translate3d(0, calc((1 - var(--t)) * 42px), 0);
-    filter: blur(calc((1 - var(--t)) * 6px));
   }
   .pin-intro {
     opacity: clamp(0, 1 - var(--pin) * 3.5, 1);
@@ -209,7 +208,7 @@ html.lenis, html.lenis body { height: auto; }
   .reveal-words .word-mask { overflow: visible !important; }
   [data-scene] * { transform: none !important; }
   .stage-frame, .pin-frame { clip-path: none !important; }
-  .pin-line, .pin-shade { opacity: 1 !important; filter: none !important; }
+  .pin-line, .pin-shade { opacity: 1 !important; }
   .pin-intro { opacity: 0 !important; }
 }
 

@@ -80,8 +80,8 @@ export function ExperienceSection({ onExplore }) {
           <div className="absolute inset-0 bg-gradient-to-r from-[#172844]/80 via-[#233e63]/28 to-transparent" />
           <div className="absolute inset-0 bg-gradient-to-t from-[#172844]/55 via-transparent to-transparent" />
           <div className="relative z-1 flex min-h-[460px] flex-col justify-between p-6 text-white sm:min-h-[600px] sm:p-10">
-            <span className="float-slow will-move w-fit border border-white/45 bg-white/10 px-4 py-2 text-[10px] font-bold tracking-[.22em] backdrop-blur-lg">AN OPEN ROAD AHEAD</span>
-            <div className="float-fast will-move max-w-md border border-white/35 bg-white/15 p-6 backdrop-blur-xl sm:p-8">
+            <span className="float-slow will-move w-fit border border-white/45 bg-white/20 px-4 py-2 text-[10px] font-bold tracking-[.22em] backdrop-blur-sm">AN OPEN ROAD AHEAD</span>
+            <div className="float-fast will-move max-w-md border border-white/35 bg-white/20 p-6 backdrop-blur-sm sm:p-8">
               <Sparkles size={22} strokeWidth={1.5} />
               <h3 className="mt-5 font-display text-2xl font-semibold leading-tight sm:text-3xl">Room to discover what moves you.</h3>
               <p className="mt-3 text-sm leading-6 text-white/85">From the first glance to the finer details, explore a collection made for more than getting from A to B.</p>
@@ -96,7 +96,7 @@ export function ExperienceSection({ onExplore }) {
       <div ref={journeyRef} data-scene className="mt-5 grid gap-4 md:grid-cols-3 md:pt-6">
         {journey.map(({ number, icon: Icon, title, text }, index) => (
           <div key={number} className={`drift-${index + 1} will-move`}>
-            <Reveal as="article" delay={index * 120} className="h-full border border-white/75 bg-white/65 p-6 shadow-card backdrop-blur-md sm:p-7">
+            <Reveal as="article" delay={index * 120} className="h-full border border-white/75 bg-white/75 p-6 shadow-card backdrop-blur-sm sm:p-7">
               <div className="flex items-start justify-between text-steel">
                 <Icon size={25} strokeWidth={1.4} />
                 <span className="font-display text-xs font-bold tracking-[.18em]">{number} / 03</span>
@@ -227,7 +227,7 @@ export function AboutSection({ onExplore }) {
                 </button>
               </Reveal>
             </div>
-            <div className="float-fast will-move border border-white/35 bg-white/12 p-6 backdrop-blur-xl lg:self-end">
+            <div className="float-fast will-move border border-white/35 bg-white/20 p-6 backdrop-blur-sm lg:self-end">
               <span className="text-[10px] font-bold tracking-[.2em] text-[#d7e4fa]">OUR POINT OF VIEW</span>
               <p className="mt-4 font-display text-xl font-medium leading-snug sm:text-2xl">A car is never just a specification. It is how the next chapter begins.</p>
               <div className="mt-6 h-px bg-white/30" />
@@ -268,7 +268,7 @@ export function AboutSection({ onExplore }) {
         </div>
         <div className="space-y-3">
           {questions.map(({ question, answer }, index) => (
-            <Reveal as="details" key={question} delay={index * 100} className="group border border-white/80 bg-white/65 px-5 py-5 shadow-card backdrop-blur-md open:bg-white/85">
+            <Reveal as="details" key={question} delay={index * 100} className="group border border-white/80 bg-white/75 px-5 py-5 shadow-card backdrop-blur-sm open:bg-white/85">
               <summary className="flex cursor-pointer list-none items-center justify-between gap-5 font-display text-sm font-semibold marker:hidden sm:text-base">
                 {question}<span className="text-xl font-light text-steel group-open:rotate-45 transition-transform">+</span>
               </summary>

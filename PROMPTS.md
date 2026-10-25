@@ -232,8 +232,37 @@ lets try the second option with a groq api key
 - **Frontend Formatting:** Added `white-space: pre-wrap;` to `.company-assistant-message` for formatted multi-line and bulleted recommendations, and added a "Which car is best for me?" suggestion chip to the assistant panel.
 - **Configuration & Deployment:** Configured `GROQ_API_KEY` in `.env.example`, created local `.env`, and configured `render.yaml` with `sync: false` for production deployment on Render.
 - **Testing & Verification:** Added automated unit and integration tests covering Groq API routing with injected `fetchFn`, live prompt compilation, failure fallback, and local matchmaking in `server/assistant.test.js`. Full test suite (35 backend tests, 17 frontend tests) and production build pass.
+---
 
+### User → Antigravity (Prompt 15)
+```text
+see this, the formatting looks a bit off
+the conversation got stuck here
+can you make that photo fit side to side. Also before that can you make the photo more clear and sharp cause it looks a bit blurry. Keep a copy of the photo
+what size should the photo be?? IM getting it upscaled myself
+```
 
+### Antigravity Actions (Prompt 15)
+- **Formatted Assistant Output:** Added `FormattedMessage` in `client/components/CompanyAssistant.jsx` to parse markdown bold elements (`**text**`) and bullet points into semantic `<strong>` tags and styled `<ul><li>` lists, plus custom slim scrollbars.
+- **Multi-Turn Chat History:** Updated the assistant client and server to preserve up to 8 conversation turns, preventing repetitive questions. Increased token generation ceiling to 800 tokens to ensure complete responses.
+- **Edge-to-Edge Hero Framing:** Removed `.shell` container constraint from the hero section in `client/App.jsx`, allowing the hero background image to span 100% of the viewport width with centered alignment.
+- **Image Backups & Specifications:** Preserved pristine original stock photo at `public/hero-v2.original.webp`. Provided recommended 16:9 ultra-high-definition specifications (2560x1440 WebP).
 
+---
+
+### User → Antigravity (Prompt 16)
+```text
+take this image. Also the website is a bit laggy. Cna you do somethig to make it very smooth while scrolling and everything??
+```
+
+### Antigravity Actions (Prompt 16)
+- **High-DPI Hero Asset Processing:** Saved the user's uploaded image directly to `public/hero-v2.user-uploaded.png` as a pristine backup. Converted and upscaled the image to 2560x1440 WebP (quality 92, method 6) with fine unsharp masking, outputting to `public/hero-v2.webp`.
+- **Eliminated Layout Thrashing (DOM Read/Write Batching):** Refactored `measure()` in `client/lib/motion.jsx` into two distinct phases. Phase 1 batches all `getBoundingClientRect()` measurements across all registered scenes; Phase 2 performs all CSS variable writes (`writeVar`) together. This eliminated forced synchronous layout reflows on every scroll frame.
+- **Tuned Lenis Inertial Scrolling:** Increased Lenis `lerp` from `0.085` to `0.12`, set `wheelMultiplier: 1.0`, and adjusted programmatic scroll duration to `1.2s` for immediate, silky-smooth mousewheel tracking without sluggish drag.
+- **GPU Layer Isolation & Filter Optimization:**
+  - Added `transform: translateZ(0);` to `.will-move` in `client/style.css` to promote parallax layers to independent compositor textures.
+  - Removed dynamic per-frame `filter: blur(...)` calculation on `.pin-line` during pinned scroll.
+  - Replaced heavy `backdrop-blur-xl` (24px radius) and `backdrop-blur-lg` on moving parallax cards and badges in `client/components/EditorialSections.jsx` with lightweight `backdrop-blur-sm` and `bg-white/20`, drastically reducing GPU fill-rate strain and compositor stalls.
+- **Verification:** Ran test suite (36 backend tests, 18 client tests pass) and verified clean production build.
 
 
