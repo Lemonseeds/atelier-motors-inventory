@@ -240,8 +240,12 @@ export function InteriorPanoramaModal({ vehicle, onClose }) {
       role="dialog"
       aria-modal="true"
       aria-label="360 Cockpit Panorama Viewer"
+      data-lenis-prevent="true"
     >
-      <div className="relative w-full max-w-6xl h-[88vh] max-h-[820px] bg-[#111723] border border-[#273549] rounded-sm shadow-2xl flex flex-col overflow-hidden">
+      <div
+        className="relative w-full max-w-6xl h-[88vh] max-h-[820px] bg-[#111723] border border-[#273549] rounded-sm shadow-2xl flex flex-col overflow-hidden"
+        data-lenis-prevent="true"
+      >
         {/* Header Bar */}
         <div className="flex items-center justify-between px-5 py-3.5 bg-[#141c2b] border-b border-[#212c3e] text-white z-20">
           <div className="flex items-center gap-3">

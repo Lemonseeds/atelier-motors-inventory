@@ -99,6 +99,43 @@ html.lenis, html.lenis body { height: auto; }
 .lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
 .lenis.lenis-stopped { overflow: clip; }
 
+/* Luxury Custom Scrollbars for Modals & Dialogs */
+.modal-scroll-body,
+.compare-panel,
+[data-lenis-prevent] {
+  scrollbar-width: thin;
+  scrollbar-color: #bcc8d8 #f1f4f8;
+  overscroll-behavior: contain;
+}
+
+.modal-scroll-body::-webkit-scrollbar,
+.compare-panel::-webkit-scrollbar,
+[data-lenis-prevent]::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.modal-scroll-body::-webkit-scrollbar-track,
+.compare-panel::-webkit-scrollbar-track,
+[data-lenis-prevent]::-webkit-scrollbar-track {
+  background: #f1f4f8;
+  border-radius: 4px;
+}
+
+.modal-scroll-body::-webkit-scrollbar-thumb,
+.compare-panel::-webkit-scrollbar-thumb,
+[data-lenis-prevent]::-webkit-scrollbar-thumb {
+  background: #bcc8d8;
+  border-radius: 4px;
+  border: 2px solid #f1f4f8;
+}
+
+.modal-scroll-body::-webkit-scrollbar-thumb:hover,
+.compare-panel::-webkit-scrollbar-thumb:hover,
+[data-lenis-prevent]::-webkit-scrollbar-thumb:hover {
+  background: #8e9fad;
+}
+
 [data-scene] { --progress: 0.5; --center: 0; --enter: 1; --exit: 0; --pin: 0; }
 
 @layer components {

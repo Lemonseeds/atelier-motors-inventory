@@ -6,8 +6,8 @@ import { PAINT_OPTIONS, configuredPrice } from '../lib/configuration.js';
 const Model = React.lazy(() => import('./VehicleModel3D.jsx').then(({ VehicleModel3D }) => ({ default: VehicleModel3D })));
 
 export function VehicleComparePanel({ items, onClose, onRemove, onUpdate, onDesign }) {
-  return <div className="compare-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
-    <section className="compare-panel" role="dialog" aria-modal="true" aria-label="Compare vehicles">
+  return <div className="compare-backdrop" data-lenis-prevent="true" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
+    <section className="compare-panel" role="dialog" aria-modal="true" aria-label="Compare vehicles" data-lenis-prevent="true">
       <div className="compare-header"><div><span>THE COLLECTION</span><h2>Compare your cars.</h2><p>Prices reflect the options shown below. Availability may change.</p></div><button type="button" onClick={onClose} aria-label="Close comparison"><X size={23}/></button></div>
       <div className="compare-grid">{items.map(({ vehicle, selection }) => <article key={vehicle.id} className="compare-car">
         <button type="button" className="compare-remove" onClick={() => onRemove(vehicle.id)} aria-label={`Remove ${vehicle.make} ${vehicle.model}`}><X size={16}/></button>

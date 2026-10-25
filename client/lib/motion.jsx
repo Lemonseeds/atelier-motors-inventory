@@ -101,6 +101,7 @@ export function useScrollMotion() {
         lerp: 0.12,
         wheelMultiplier: 1.0,
         anchors: { offset: -24, duration: 1.2 },
+        prevent: (node) => Boolean(node?.closest?.('[role="dialog"], [data-lenis-prevent], .modal-scroll-body, .showroom-mega, .compare-panel, .company-assistant-panel')),
       });
       lenis.on('scroll', requestMeasure);
 

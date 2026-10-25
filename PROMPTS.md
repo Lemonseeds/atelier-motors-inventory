@@ -334,3 +334,40 @@ Planned and executed 5 major luxury automotive features one by one, writing dedi
   - Ran full test suite: 43 backend tests and 47 frontend unit tests all passing (90/90 tests passed).
   - Production bundle verified with `npm run build` (vite v7.3.7) with zero build errors.
 
+---
+
+### User → Antigravity (Prompt 19)
+```text
+has it been commited to github??
+```
+
+### Antigravity Actions (Prompt 19)
+- Verified working tree, confirmed all newly created components, assets, database migrations, and tests were staged and committed with descriptive message `feat: implement luxury automotive platform features (1, 2, 4, 5, 8)`.
+- Pushed commit `cb006b8` directly to `origin/main` on `https://github.com/Lemonseeds/atelier-motors-inventory.git`.
+
+---
+
+### User → Antigravity (Prompt 20)
+```text
+i cant scoll here and same with the quiz. Could you add a scroll wheel to each of the pop up windows like these
+```
+
+### Antigravity Actions (Prompt 20)
+- **Root Cause Diagnosis:**
+  - When any modal opened, `document.body.style.overflow = 'hidden'` triggered `lenis.stop()` (`isStopped = true`) in `client/lib/motion.jsx`.
+  - In Lenis smooth scroll, when `isStopped === true`, the global window `wheel` listener executes `event.preventDefault()`, which suppressed all mouse wheel and trackpad scroll events across the entire window.
+  - Furthermore, `client/components/Modal.jsx` had an unconstrained dialog container without internal max-height or `overflow-y-auto`, causing content taller than the viewport (such as the expanded Monroney window label and quiz results) to clip at the bottom of the screen.
+- **Architectural Solution & Implementation:**
+  - **Lenis Modal Prevent Filter (`client/lib/motion.jsx`):** Configured `prevent: (node) => Boolean(node?.closest?.('[role="dialog"], [data-lenis-prevent], .modal-scroll-body, .showroom-mega, .compare-panel, .company-assistant-panel'))` in `new Lenis(...)`, ensuring Lenis never intercepts or cancels wheel events inside any dialog or modal container.
+  - **Modal Container Constraints & Pinned Header (`client/components/Modal.jsx`):**
+    - Constrained dialog cards to `max-h-[88vh] sm:max-h-[85vh]` and `flex flex-col overflow-hidden`.
+    - Pinned the modal header (`ATELIER MOTORS` eyebrow, title, subtitle, and close button) with `shrink-0 border-b border-[#edf1f7] bg-white`, keeping the title and close button permanently accessible even during deep scrolling.
+    - Encapsulated content in `.modal-scroll-body` with `flex-1 overflow-y-auto overscroll-contain` and `data-lenis-prevent="true"`.
+  - **Luxury Custom Scrollbar Styling (`client/style.css`):**
+    - Styled `.modal-scroll-body`, `.compare-panel`, and `[data-lenis-prevent]` with visible, elegant scrollbars (`scrollbar-width: thin; scrollbar-color: #bcc8d8 #f1f4f8` for Firefox; 8px WebKit scrollbars with rounded track and hover states `#8e9fad`).
+  - **Panel Safeguards:** Added `data-lenis-prevent="true"` to `InteriorPanoramaModal.jsx`, `CompanyAssistant.jsx`, and `VehicleComparePanel.jsx`.
+- **Testing & Verification:**
+  - Added `client/components/Modal.test.jsx` testing pinned headers, scrollable bodies, and lenis attributes.
+  - Verified full test suite passing: 43 backend tests + 49 frontend tests = 92/92 tests passing.
+  - Verified clean production build with `npm run build`.
+

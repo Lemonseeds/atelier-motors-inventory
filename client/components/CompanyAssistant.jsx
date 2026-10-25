@@ -180,7 +180,7 @@ export function CompanyAssistant() {
   return (
     <div className="company-assistant">
       {open && (
-        <section className="company-assistant-panel" role="dialog" aria-label="Atelier Assistant">
+        <section className="company-assistant-panel" role="dialog" aria-label="Atelier Assistant" data-lenis-prevent="true">
           <div className="company-assistant-header">
             <div>
               <span>ATELIER MOTORS</span>
@@ -191,7 +191,7 @@ export function CompanyAssistant() {
             </button>
           </div>
           <p className="company-assistant-scope">Answers are limited to Atelier Motors and our vehicles.</p>
-          <div className="company-assistant-messages" role="log" aria-live="polite">
+          <div className="company-assistant-messages" role="log" aria-live="polite" data-lenis-prevent="true">
             {messages.map((item, i) => (
               <div key={i} className={`company-assistant-message is-${item.role}`}>
                 <FormattedMessage text={item.text} />
