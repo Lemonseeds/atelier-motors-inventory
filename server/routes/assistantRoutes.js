@@ -12,12 +12,104 @@ function namedVehicle(text, vehicles) {
   return vehicles.find((vehicle) => inText(text, vehicle.make) && vehicles.filter((item) => item.make === vehicle.make).length === 1) || null;
 }
 
-function localAnswer(question, vehicles) {
+export function buildGroqSystemPrompt(vehicles) {
+  const inventoryList = vehicles.map((v) =>
+    `- ${v.make} ${v.model} (${v.year}): Category: ${v.category}, Starting Price: ${money.format(v.price)}, Stock: ${v.quantity} available. Description: ${v.description}`
+  ).join('\n');
+
+  const policies = companyKnowledge.map((k) =>
+    `- ${k.id.toUpperCase()}: ${k.answer}`
+  ).join('\n');
+
+  return `You are the Atelier Assistant, an intelligent, poised, and articulate digital showroom concierge for Atelier Motors.
+
+LIVE SHOWROOM INVENTORY (7 MODELS):
+${inventoryList}
+
+OFFICIAL COMPANY POLICIES & INFORMATION:
+${policies}
+
+STRICT CONCIERGE GUIDELINES:
+1. When asked recommendation or matchmaking questions (e.g. "which car is best for me?", "what car do you recommend?", "I need a family car"):
+   - Actively match on their driving priorities, lifestyle, space, or budget.
+   - Summarize the top matching choices from our catalog by lifestyle:
+     • Grand touring & performance: Aurelia GT S ($89,400) or convertible Solenne R8 ($96,800)
+     • Spacious luxury SUV & family: Northline Summit X ($94,200) or Meridian LX ($78,500)
+     • Advanced electric driving: Eon Lucent sedan ($88,900) or Eon Arc coupe ($74,600)
+     • Understated executive sedan: Vesper S2 ($68,200)
+2. Keep answers concise, helpful, and elegant (2–4 sentences or clean bullet points). Do not write huge walls of text.
+3. Ground all specifications, prices, and stock numbers strictly in the LIVE INVENTORY above. Never invent cars or specs.
+4. If asked about financing, delivery terms, or physical showroom addresses, cite our official policies above (e.g. an Atelier Motors team member confirms payment and delivery directly; online card payments are not processed).
+5. If a question is completely unrelated to Atelier Motors, vehicles, or the buying/customizing process (e.g. general trivia, coding, other topics), politely decline with: "${assistantBoundary}".`;
+}
+
+export async function askGroq({ question, vehicles, apiKey, model = 'llama-3.3-70b-versatile', fetchFn = globalThis.fetch }) {
+  const systemPrompt = buildGroqSystemPrompt(vehicles);
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 8000);
+
+  try {
+    const response = await fetchFn('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: question },
+        ],
+        temperature: 0.4,
+        max_completion_tokens: 350,
+      }),
+      signal: controller.signal,
+    });
+
+    if (!response.ok) {
+      const err = await response.text();
+      throw new Error(`Groq API error ${response.status}: ${err}`);
+    }
+
+    const data = await response.json();
+    const content = data.choices?.[0]?.message?.content?.trim();
+    if (!content) throw new Error('Empty response from Groq');
+    return content;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+export function localAnswer(question, vehicles) {
   const text = normalize(question);
   const car = namedVehicle(text, vehicles);
-  const inDomain = Boolean(car) || domainWords.some((word) => inText(text, word)) || /(?:what|which|available|sell|offer) (?:cars|vehicles|models)|(?:buy|purchase|customize|customise|configure|compare) (?:a |the |my )?(?:car|vehicle)|delivery zip/.test(text);
+  const inDomain = Boolean(car) ||
+    domainWords.some((word) => inText(text, word)) ||
+    /\b(?:car|cars|vehicle|vehicles|model|models|suv|suvs|coupe|coupes|sedan|sedans|convertible|convertibles|ev|electric|hybrid)\b/.test(text) ||
+    /\b(?:recommend|suggest|recommendation|advice|choose|pick|best)\b/.test(text) ||
+    /delivery zip|family|spacious/.test(text);
   if (!inDomain) return { answer: assistantBoundary, source: null };
   if (/ignore (all |the )?(previous|instructions)|jailbreak|system prompt/.test(text)) return { answer: assistantBoundary, source: null };
+
+  if (/(?:which|what) (?:car|vehicle|model) (?:would be |is )?(?:the )?best|recommend|suggest|what should i (?:buy|choose|get)|help me (?:choose|pick|find)/.test(text)) {
+    return {
+      answer: 'The best car depends on your driving style and needs:\n• For everyday space & family versatility: Northline Summit X ($94,200) or Meridian LX ($78,500)\n• For electric innovation: Eon Lucent ($88,900) or Eon Arc ($74,600)\n• For grand touring & open-road exhilaration: Aurelia GT S ($89,400) or convertible Solenne R8 ($96,800)\n• For executive composure: Vesper S2 ($68,200)\n\nTell me your preferred body style, budget, or daily driving needs to narrow it down.',
+      source: 'recommendation',
+    };
+  }
+  if (/family|kids|spacious|space|cargo|luggage|road trip/.test(text)) {
+    return {
+      answer: 'For family comfort and cargo space, we recommend our two luxury SUVs: the Northline Summit X ($94,200) with commanding perspective and generous room, or the Meridian LX ($78,500) offering refined versatility with an expansive cabin.',
+      source: 'recommendation',
+    };
+  }
+  if (/electric|ev|battery|clean energy|eco/.test(text)) {
+    return {
+      answer: 'For electric driving, explore the Eon Lucent ($88,900) for a quiet, fluid luxury sedan experience, or the Eon Arc ($74,600) for responsive all-electric coupe performance.',
+      source: 'recommendation',
+    };
+  }
 
   if (/price|cost|how much|starting at/.test(text)) {
     if (car) return { answer: `The ${car.make} ${car.model} starts at ${money.format(car.price)}. Paint, interior, and edition choices can change the configured price.`, source: 'live-inventory' };
@@ -42,8 +134,9 @@ function localAnswer(question, vehicles) {
   if (matched?.score) return { answer: matched.entry.answer, source: matched.entry.id };
   return { answer: assistantBoundary, source: null };
 }
-/** Public, bounded chat route. Only approved knowledge and live inventory facts are returned. */
-export function createAssistantRouter({ vehicles }) {
+
+/** Public, bounded chat route. Uses Groq Cloud LLM when configured, with local smart recommendation fallback. */
+export function createAssistantRouter({ vehicles, groqApiKey = process.env.GROQ_API_KEY, groqModel = process.env.GROQ_MODEL || 'llama-3.3-70b-versatile', fetchFn = globalThis.fetch }) {
   const router = Router();
   const hits = new Map();
   router.post('/', async (req, res) => {
@@ -56,8 +149,20 @@ export function createAssistantRouter({ vehicles }) {
     recent.push(now);
     hits.set(key, recent);
     const inventory = await vehicles.list();
+
+    const apiKey = groqApiKey || process.env.GROQ_API_KEY;
+    if (apiKey) {
+      try {
+        const groqAnswer = await askGroq({ question, vehicles: inventory, apiKey, model: groqModel, fetchFn });
+        return res.json({ answer: groqAnswer, source: 'groq' });
+      } catch (err) {
+        console.warn('Groq assistant fallback:', err.message);
+      }
+    }
+
     const result = localAnswer(question, inventory);
     res.json({ answer: result.answer, source: result.source });
   });
   return router;
 }
+

@@ -3,7 +3,7 @@ import { ArrowUp, MessageCircle, X } from 'lucide-react';
 import { api } from '../api.js';
 
 const welcome = 'Hi, I’m the Atelier Assistant. Ask me about Atelier Motors, our cars, prices, or customization.';
-const suggestions = ['Which cars do you have?', 'How do I customize a car?', 'How do I buy a car?'];
+const suggestions = ['Which cars do you have?', 'Which car is best for me?', 'How do I customize a car?'];
 
 export function CompanyAssistant() {
   const [open, setOpen] = useState(false);

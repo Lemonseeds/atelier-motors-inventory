@@ -218,6 +218,21 @@ the first image that i have attached, the letter s of the word moves is being cu
 - Fixed the pinned `Interlude` sedan section: removed the artificial 44% width `clip-path: inset(16% 22%)` and 1.28x over-zoom that cut off the car profile and door panel. Framed the car in full-bleed 16:9 widescreen with centered stance (`object-[center_60%] sm:object-[center_55%]`, starting at clean 1.0 scale with a gentle 1.0 → 1.06 cinematic push). Positioned the intro subtitle safely in the sky area (`top-14 sm:top-20`) with soft gradient mist transitions at section boundaries, eliminating all awkward borders, clipping, and text collisions.
 - Ran full test suite (26 backend tests, 11 frontend tests) and verified clean production build.
 
+---
+
+### User → Antigravity (Prompt 14)
+```text
+lets try the second option with a groq api key
+```
+
+### Antigravity Actions (Prompt 14)
+- **Zero-Dependency Groq Integration:** Leveraged Node 22 native `globalThis.fetch` to interface with Groq's OpenAI-compatible completions endpoint (`https://api.groq.com/openai/v1/chat/completions`) using `llama-3.3-70b-versatile` without requiring external SDK bloat.
+- **Dynamic RAG System Prompt (`buildGroqSystemPrompt`):** Injects live inventory (all 7 models with year, category, current starting price, description, and available stock units) and official Atelier Motors policies into the system prompt. Concierge rules enforce lifestyle matchmaking (GT performance, spacious family SUVs, executive sedans, and EVs), strict grounding, and polite refusal of out-of-domain trivia.
+- **Resilient Fallback Architecture:** If `GROQ_API_KEY` is omitted or an external call fails (timeout/network/5xx), `/api/assistant` automatically falls back to an intelligent local recommendation engine without exposing 500 errors to visitors.
+- **Frontend Formatting:** Added `white-space: pre-wrap;` to `.company-assistant-message` for formatted multi-line and bulleted recommendations, and added a "Which car is best for me?" suggestion chip to the assistant panel.
+- **Configuration & Deployment:** Configured `GROQ_API_KEY` in `.env.example`, created local `.env`, and configured `render.yaml` with `sync: false` for production deployment on Render.
+- **Testing & Verification:** Added automated unit and integration tests covering Groq API routing with injected `fetchFn`, live prompt compilation, failure fallback, and local matchmaking in `server/assistant.test.js`. Full test suite (35 backend tests, 17 frontend tests) and production build pass.
+
 
 
 

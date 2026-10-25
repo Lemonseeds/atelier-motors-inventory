@@ -125,6 +125,8 @@ Key variables:
 - `PORT`: Server port (default: `3001`).
 - `DATABASE_PATH`: Local SQLite path (default: `./data/inventory.db`).
 - `DATABASE_URL`: (Optional) PostgreSQL connection URI for hosted cloud database.
+- `GROQ_API_KEY`: (Optional) Free API key from [Groq Console](https://console.groq.com/keys) powering conversational vehicle recommendations with `llama-3.3-70b-versatile` over RAG live inventory. If omitted, the assistant seamlessly falls back to the deterministic local matchmaking engine.
+- `GROQ_MODEL`: (Optional, default: `llama-3.3-70b-versatile`).
 
 ### 3. Start Development Servers
 Run both backend API and Vite client concurrently:

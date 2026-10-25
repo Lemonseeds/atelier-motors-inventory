@@ -7,6 +7,7 @@ import { createVehicleRepository } from './repositories/vehicleRepository.js';
 import { createAuthRouter } from './routes/authRoutes.js';
 import { createVehicleRouter } from './routes/vehicleRoutes.js';
 import { createAssistantRouter } from './routes/assistantRoutes.js';
+import { createTestDriveRouter } from './routes/testDriveRoutes.js';
 
 /**
  * Composes the Express application. The database is injected so tests can use
@@ -14,7 +15,7 @@ import { createAssistantRouter } from './routes/assistantRoutes.js';
  * @param {object} db database exposing prepare(sql).get/all/run
  * @param {{ clientDist?: string }} options optional built SPA directory to serve
  */
-export function createApp(db, { clientDist } = {}) {
+export function createApp(db, { clientDist, assistantOptions } = {}) {
   const users = createUserRepository(db);
   const vehicles = createVehicleRepository(db);
   const requireAuth = createRequireAuth(users);
@@ -26,7 +27,8 @@ export function createApp(db, { clientDist } = {}) {
   app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
   app.use('/api/auth', createAuthRouter({ users, requireAuth }));
   app.use('/api/vehicles', createVehicleRouter({ vehicles, requireAuth }));
-  app.use('/api/assistant', createAssistantRouter({ vehicles }));
+  app.use('/api/assistant', createAssistantRouter({ vehicles, ...assistantOptions }));
+  app.use('/api/test-drives', createTestDriveRouter({ db, vehicles, requireAuth }));
   app.use('/api', (_req, res) => res.status(404).json({ error: 'Not found.' }));
 
   if (clientDist && existsSync(clientDist)) serveSpa(app, clientDist);

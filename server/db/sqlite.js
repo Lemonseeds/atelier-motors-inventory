@@ -29,6 +29,16 @@ export function schemaSql(idColumn) {
     );
     CREATE INDEX IF NOT EXISTS idx_vehicles_make_model ON vehicles(make, model);
     CREATE INDEX IF NOT EXISTS idx_vehicles_category_price ON vehicles(category, price);
+    CREATE TABLE IF NOT EXISTS test_drives (
+      id ${idColumn},
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      vehicle_id INTEGER NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE,
+      preferred_date TEXT NOT NULL,
+      time_window TEXT NOT NULL CHECK (time_window IN ('Morning', 'Afternoon', 'Evening')),
+      status TEXT NOT NULL DEFAULT 'requested' CHECK (status IN ('requested', 'confirmed', 'cancelled')),
+      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE INDEX IF NOT EXISTS idx_test_drives_user ON test_drives(user_id, created_at);
   `;
 }
 
