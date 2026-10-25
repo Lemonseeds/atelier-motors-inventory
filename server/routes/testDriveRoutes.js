@@ -1,7 +1,20 @@
 import { Router } from 'express';
 
 const windows = new Set(['Morning', 'Afternoon', 'Evening']);
-const rowToRequest = (row) => row && ({ id: Number(row.id), userId: Number(row.user_id), vehicleId: Number(row.vehicle_id), vehicleName: `${row.make} ${row.model}`, customerName: row.customer_name, customerEmail: row.customer_email, preferredDate: row.preferred_date, timeWindow: row.time_window, status: row.status });
+const rowToRequest = (row) => row && ({
+  id: Number(row.id),
+  userId: Number(row.user_id),
+  vehicleId: Number(row.vehicle_id),
+  vehicleName: `${row.make} ${row.model}`,
+  customerName: row.customer_name,
+  customerEmail: row.customer_email,
+  preferredDate: row.preferred_date,
+  timeWindow: row.time_window,
+  experienceType: row.experience_type || 'Showroom',
+  location: row.location || 'Atelier Flagship',
+  status: row.status,
+  createdAt: row.created_at,
+});
 
 export function createTestDriveRouter({ db, vehicles, requireAuth }) {
   const router = Router();
@@ -14,7 +27,7 @@ export function createTestDriveRouter({ db, vehicles, requireAuth }) {
   });
 
   router.post('/', async (req, res) => {
-    const { vehicleId, preferredDate, timeWindow } = req.body || {};
+    const { vehicleId, preferredDate, timeWindow, experienceType = 'Showroom', location = 'Atelier Flagship' } = req.body || {};
     if (!Number.isSafeInteger(vehicleId) || vehicleId < 1 || !/^\d{4}-\d{2}-\d{2}$/.test(preferredDate || '') || !windows.has(timeWindow)) return res.status(400).json({ error: 'Choose a vehicle, date, and time window.' });
     const date = new Date(`${preferredDate}T00:00:00Z`);
     const today = new Date();
@@ -23,7 +36,7 @@ export function createTestDriveRouter({ db, vehicles, requireAuth }) {
     if (Number.isNaN(date.getTime()) || date.toISOString().slice(0, 10) !== preferredDate || date < first || date > last) return res.status(400).json({ error: 'Choose a valid date within the next 90 days, starting tomorrow.' });
     const vehicle = await vehicles.findById(vehicleId);
     if (!vehicle) return res.status(404).json({ error: 'Vehicle not found.' });
-    const row = await db.prepare('INSERT INTO test_drives (user_id, vehicle_id, preferred_date, time_window) VALUES (?, ?, ?, ?) RETURNING *').get(req.user.id, vehicleId, preferredDate, timeWindow);
+    const row = await db.prepare('INSERT INTO test_drives (user_id, vehicle_id, preferred_date, time_window, experience_type, location) VALUES (?, ?, ?, ?, ?, ?) RETURNING *').get(req.user.id, vehicleId, preferredDate, timeWindow, experienceType, location);
     res.status(201).json({ request: rowToRequest({ ...row, make: vehicle.make, model: vehicle.model, customer_name: req.user.name, customer_email: req.user.email }) });
   });
 

@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ArrowUp, MessageCircle, X } from 'lucide-react';
 import { api } from '../api.js';
 
@@ -144,6 +144,17 @@ export function CompanyAssistant() {
   const [messages, setMessages] = useState([{ role: 'assistant', text: welcome }]);
   const [busy, setBusy] = useState(false);
   const inputRef = useRef(null);
+
+  useEffect(() => {
+    const handleAskEvent = (e) => {
+      setOpen(true);
+      if (e.detail?.prompt) {
+        ask(e.detail.prompt);
+      }
+    };
+    window.addEventListener('atelier:ask-concierge', handleAskEvent);
+    return () => window.removeEventListener('atelier:ask-concierge', handleAskEvent);
+  }, []);
 
   async function ask(raw) {
     const message = raw.trim();

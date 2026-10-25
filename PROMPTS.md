@@ -280,3 +280,57 @@ after youre done with that could you please suggest what all i could add?
 - **Preserved 3D Configurator:** The 3D model with interactive orbital controls, paint swatches, and trim selector remains dedicated to the `VehicleDesignPage` ("Design yours"), where users actively customize builds.
 - **Verified Suite & Build:** All 36 backend tests and 18 client unit tests pass (54/54 passed); production build completes cleanly.
 - **Strategic Suggestions Provided:** Curated high-value feature recommendations across test-drive scheduling, financing calculators, wishlist/spec-sharing, 360° interior tours, order tracking, and voice concierge.
+
+---
+
+### User → Antigravity (Prompt 18)
+```text
+make 1,2,4,5 and 8. Make it after planning it properly. Make it one by one and test before moving onto the next
+```
+
+### Antigravity Actions (Prompt 18)
+Planned and executed 5 major luxury automotive features one by one, writing dedicated backend schemas, calculation engines, frontend components, and comprehensive unit and integration tests for each:
+
+1. **Feature 1: Interactive Test Drive Booking & Calendar Scheduling**
+   - **Schema & Persistence:** Extended `test_drives` table in both SQLite (`server/db/sqlite.js`) and PostgreSQL (`server/db/postgres.js`) with `experience_type` and `location`.
+   - **API Routes:** Updated `server/routes/testDriveRoutes.js` supporting Showroom vs. Home Concierge delivery bookings, 90-day future date constraints, and time slots.
+   - **Calendar Integration:** Created `client/lib/calendar.js` implementing RFC 5545 iCalendar (`.ics`) file generation and client-side downloads for Google Calendar, Apple Calendar, and Outlook.
+   - **UI & Modal:** Built `client/components/TestDriveModal.jsx` with date/time pickers, showroom branch selector, concierge delivery address entry, and instant calendar export. Wired into `VehicleDetailDialog`, `VehiclePages`, and `App.jsx`.
+   - **Tests:** `server/testDrive.test.js` (4 tests) and `client/components/TestDriveModal.test.jsx` (4 tests).
+
+2. **Feature 2: Financing, Lease & Monthly Payment Calculator**
+   - **Financial Engine:** Created `client/lib/financing.js` implementing standard automotive amortization loan formulas and capitalized-cost residual lease formulas, APR credit tiers (Tier 1 Excellent, Tier 2 Good, Tier 3 Standard), and customizable term horizons (24, 36, 48, 60, 72 months).
+   - **Interactive Component:** Built `client/components/PaymentCalculator.jsx` with dual Loan vs. Lease mode toggle, down payment percentage slider, term selector, credit tier buttons, and full financial breakdown table. Embedded directly inside `VehicleDetailDialog` and `VehicleDesignPage`.
+   - **Tests:** `client/lib/financing.test.js` (3 tests) and `client/components/PaymentCalculator.test.jsx` (3 tests).
+
+3. **Feature 4: "My Garage" & Order Tracking Portal**
+   - **Backend Schema:** Created `orders` table in SQLite (`server/db/sqlite.js`) with columns for unique VIN (`1AT...`), order progression status, configured options JSON, total price, delivery address, and estimated delivery date.
+   - **Atomic Purchasing:** Enhanced `POST /api/vehicles/:id/purchase` in `server/routes/vehicleRoutes.js` to atomically decrement vehicle inventory and insert a confirmed order record with generated VIN.
+   - **Order Management API:** Created `server/routes/orderRoutes.js` with `GET /api/orders` (customer-specific or admin list) and `PATCH /api/orders/:id/status` (admin-controlled progression updates). Mounted in `server/app.js`.
+   - **Frontend Dashboard:** Built `client/components/MyGarageModal.jsx` featuring:
+     - 5-stage production timeline: Confirmed Allocation -> Handcrafted Assembly -> 150-Point Inspection -> Enclosed Transit -> Private Handover.
+     - Digital Monroney Window Sticker with official NHTSA 5-star safety ratings, standard luxury equipment, factory warranty, and vehicle VIN badge.
+     - Scheduled Test Drives tab with `.ics` calendar re-downloads and status badges.
+     - Integrated into navigation header and member profile.
+   - **Tests:** `server/order.test.js` (3 tests) and `client/components/MyGarageModal.test.jsx` (5 tests).
+
+4. **Feature 5: Interactive 360° Interior Cockpit Panorama Viewer**
+   - **Zero WebGL Overhead:** Built `client/components/InteriorPanoramaModal.jsx` utilizing hardware-accelerated 60fps CSS transform matrices and HTML5 pointer inertia, ensuring zero GPU lag or frame drops.
+   - **Craftsmanship Beacons:** Placed 5 pulsing interactive hotspots: Curved Floating OLED Hyperscreen (8K Sapphire), Hand-Stitched Perforated Steering Wheel, Burmester 3D High-End Spatial Surround (24 speakers), Quilted Executive Nappa Seating (16-way massage), and Sculpted Monolithic Natural Walnut Center Console.
+   - **Interactive Inspector Cards:** Clicking any beacon displays glassmorphic craft specifications and details.
+   - **Dual Cockpit Themes:** Generated high-resolution imagery for Obsidian & Walnut (`/cockpit-panorama.jpg`) and Arctic Ivory & Platinum (`/cockpit-ivory.jpg`).
+   - **Web Audio Ambiance:** Synthesizes low-frequency 48Hz warm cabin engine hum using the Web Audio API without heavy media files.
+   - **Controls:** 360° slow auto-pan tour, zoom in/out, view reset, and quick-hop bottom ribbon. Wired into `VehicleDetailDialog`, `VehicleLearnPage`, and `VehicleDesignPage`.
+   - **Tests:** `client/components/InteriorPanoramaModal.test.jsx` (6 tests).
+
+5. **Feature 8: AI Lifestyle Matchmaker Quiz**
+   - **Scoring Engine:** Created `client/lib/matchmaker.js` defining 4 lifestyle questions (Driving Purpose, Powertrain, Cabin Atmosphere, Design Priority) with weighted category affinities and model-specific matching logic.
+   - **Interactive Modal:** Built `client/components/MatchmakerQuizModal.jsx` with animated question progression, analyzing transition state, primary hero recommendation card with match percentage badge (e.g. 98% Match) and itemized justification reasons, plus secondary runner-up vehicle card.
+   - **Direct Conversion CTAs:** Action buttons to immediately launch 3D configurator ("Design in 3D"), book private test drive ("Schedule Test Drive"), or consult the Atelier AI concierge with tailored pre-filled prompt ("Ask Concierge").
+   - **Launch Entry Points:** Wired into showroom hero section, navigation bar ("Matchmaker"), and mobile menu.
+   - **Tests:** `client/lib/matchmaker.test.js` (4 tests) and `client/components/MatchmakerQuizModal.test.jsx` (4 tests).
+
+- **Verification & Quality Assurance:**
+  - Ran full test suite: 43 backend tests and 47 frontend unit tests all passing (90/90 tests passed).
+  - Production bundle verified with `npm run build` (vite v7.3.7) with zero build errors.
+

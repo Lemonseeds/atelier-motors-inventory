@@ -226,6 +226,10 @@ html.lenis, html.lenis body { height: auto; }
 .showroom-nav-links button:hover, .showroom-nav-links button.is-active { background: rgb(255 255 255 / .2); }
 .showroom-nav-page .showroom-nav-links button:hover, .showroom-nav-open .showroom-nav-links button:hover, .showroom-nav-links button.is-active { background: #f0f2f4; }
 .showroom-nav-actions, .showroom-account { display: flex; align-items: center; gap: 11px; }
+.showroom-garage-nav-btn { display: inline-flex; align-items: center; gap: 7px; padding: 8px 13px; border: 1px solid currentColor; border-radius: 4px; background: transparent; color: inherit; font-size: 11px; font-weight: 800; letter-spacing: .05em; transition: background .2s, border-color .2s; }
+.showroom-garage-nav-btn:hover { background: rgb(255 255 255 / .18); }
+.showroom-nav-page .showroom-garage-nav-btn, .showroom-nav-open .showroom-garage-nav-btn { border-color: #d1d7e0; }
+.showroom-nav-page .showroom-garage-nav-btn:hover, .showroom-nav-open .showroom-garage-nav-btn:hover { background: #f0f2f5; }
 .showroom-signin { display: inline-flex; align-items: center; gap: 8px; padding: 10px 14px; border: 0; background: white; color: #273445; font-size: 12px; font-weight: 800; }
 .showroom-nav-page .showroom-signin, .showroom-nav-open .showroom-signin { background: #edf0f3; }
 .showroom-avatar { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 50%; background: white; color: #253b70; font-weight: 800; }
@@ -262,6 +266,8 @@ html.lenis, html.lenis body { height: auto; }
 .vehicle-learn-actions span { color: #69757e; font-size: 12px; font-weight: 700; }
 .vehicle-solid-button { display: inline-flex; justify-content: center; align-items: center; gap: 16px; min-height: 48px; padding: 0 24px; border: 0; background: #202b36; color: white; font-size: 12px; font-weight: 800; transition: background .2s, transform .2s; }
 .vehicle-solid-button:hover:not(:disabled) { background: #415364; transform: translateY(-2px); }
+.vehicle-secondary-button { display: inline-flex; justify-content: center; align-items: center; gap: 12px; min-height: 48px; padding: 0 22px; border: 1px solid #202b36; background: transparent; color: #202b36; font-size: 12px; font-weight: 800; transition: background .2s, color .2s, transform .2s; }
+.vehicle-secondary-button:hover { background: #202b36; color: white; transform: translateY(-2px); }
 .vehicle-learn-art { position: relative; height: min(650px, 70vw); min-height: 430px; animation: car-arrive 1s cubic-bezier(.2,.7,.2,1) both; display: flex; align-items: center; justify-content: center; }
 .vehicle-learn-art svg, .vehicle-learn-art img { filter: drop-shadow(0 24px 24px rgb(25 40 50 / .13)); }
 .vehicle-learn-number { position: absolute; bottom: 24px; left: 5vw; font-size: 10px; font-weight: 800; letter-spacing: .2em; color: #77828c; }

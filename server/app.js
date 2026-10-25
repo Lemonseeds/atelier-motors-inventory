@@ -8,6 +8,7 @@ import { createAuthRouter } from './routes/authRoutes.js';
 import { createVehicleRouter } from './routes/vehicleRoutes.js';
 import { createAssistantRouter } from './routes/assistantRoutes.js';
 import { createTestDriveRouter } from './routes/testDriveRoutes.js';
+import { createOrderRouter } from './routes/orderRoutes.js';
 
 /**
  * Composes the Express application. The database is injected so tests can use
@@ -26,9 +27,10 @@ export function createApp(db, { clientDist, assistantOptions } = {}) {
 
   app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
   app.use('/api/auth', createAuthRouter({ users, requireAuth }));
-  app.use('/api/vehicles', createVehicleRouter({ vehicles, requireAuth }));
+  app.use('/api/vehicles', createVehicleRouter({ vehicles, db, requireAuth }));
   app.use('/api/assistant', createAssistantRouter({ vehicles, ...assistantOptions }));
   app.use('/api/test-drives', createTestDriveRouter({ db, vehicles, requireAuth }));
+  app.use('/api/orders', createOrderRouter({ db, requireAuth }));
   app.use('/api', (_req, res) => res.status(404).json({ error: 'Not found.' }));
 
   if (clientDist && existsSync(clientDist)) serveSpa(app, clientDist);

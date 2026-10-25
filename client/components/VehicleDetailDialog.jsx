@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
 import {
   ArrowRight,
+  Calculator,
+  Calendar,
   CarFront,
   CheckCircle2,
+  Compass,
   Cpu,
   Gauge,
   KeyRound,
@@ -15,6 +18,7 @@ import {
 } from 'lucide-react';
 import { Modal } from './Modal.jsx';
 import { formatPrice } from '../lib/catalog.js';
+import { PaymentCalculator } from './PaymentCalculator.jsx';
 
 /**
  * Curated luxury specifications generator based on vehicle category
@@ -58,9 +62,12 @@ export function VehicleDetailDialog({
   onPurchase,
   onEdit,
   onRestock,
+  onTestDrive,
+  onExploreCockpit,
   busy
 }) {
   const [imageFailed, setImageFailed] = useState(false);
+  const [showCalculator, setShowCalculator] = useState(false);
   const isSoldOut = vehicle.quantity === 0;
   const specs = getVehicleSpecs(vehicle);
 
@@ -148,6 +155,23 @@ export function VehicleDetailDialog({
           </div>
         </div>
 
+        {/* Payment Calculator Section */}
+        <div className="border-t border-[#e8ecf2] pt-4">
+          <button
+            type="button"
+            onClick={() => setShowCalculator(!showCalculator)}
+            className="inline-flex items-center gap-2 text-xs font-bold text-royal hover:text-royal-deep transition"
+          >
+            <Calculator size={15} />
+            {showCalculator ? 'Hide Payment Estimator' : 'Estimate Monthly Payments (Finance / Lease)'}
+          </button>
+          {showCalculator && (
+            <div className="mt-3">
+              <PaymentCalculator vehiclePrice={vehicle.price} />
+            </div>
+          )}
+        </div>
+
         {/* Bottom Action & Price Bar */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-t border-[#e8ecf2] pt-5">
           <div>
@@ -182,6 +206,28 @@ export function VehicleDetailDialog({
                 </button>
               </>
             )}
+
+            <button
+              type="button"
+              className="inline-flex min-h-[44px] items-center justify-center gap-2 border border-[#ccd5e4] bg-white px-4 text-xs font-bold text-ink hover:bg-[#f2f5f9] transition"
+              onClick={() => {
+                onClose();
+                onExploreCockpit?.(vehicle);
+              }}
+            >
+              <Compass size={15} className="text-royal" /> 360° Cockpit
+            </button>
+
+            <button
+              type="button"
+              className="inline-flex min-h-[44px] items-center justify-center gap-2 border border-[#ccd5e4] bg-white px-5 text-xs font-bold text-ink hover:bg-[#f2f5f9] transition"
+              onClick={() => {
+                onClose();
+                onTestDrive?.(vehicle);
+              }}
+            >
+              <Calendar size={15} className="text-royal" /> Schedule Test Drive
+            </button>
 
             <button
               type="button"

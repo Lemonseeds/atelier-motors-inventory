@@ -10,6 +10,7 @@ import {
   Plus,
   Search,
   SlidersHorizontal,
+  Sparkles,
   X,
 } from 'lucide-react';
 import { api } from './api.js';
@@ -18,6 +19,10 @@ import { Modal } from './components/Modal.jsx';
 import { VehicleCard } from './components/VehicleCard.jsx';
 import { VehicleDetailDialog } from './components/VehicleDetailDialog.jsx';
 import { VehicleDialog } from './components/VehicleDialog.jsx';
+import { TestDriveModal } from './components/TestDriveModal.jsx';
+import { MyGarageModal } from './components/MyGarageModal.jsx';
+import { InteriorPanoramaModal } from './components/InteriorPanoramaModal.jsx';
+import { MatchmakerQuizModal } from './components/MatchmakerQuizModal.jsx';
 import { ShowroomNavigation } from './components/ShowroomNavigation.jsx';
 import { CompanyAssistant } from './components/CompanyAssistant.jsx';
 import { VehicleComparePanel } from './components/VehicleComparePanel.jsx';
@@ -45,6 +50,7 @@ export function App() {
   const [authMode, setAuthMode] = useState(null); // 'login' | 'register' | null
   const [vehicles, setVehicles] = useState(PREVIEW_VEHICLES);
   const [selectedVehicle, setSelectedVehicle] = useState(null);
+  const [testDriveVehicle, setTestDriveVehicle] = useState(null);
   const [filters, setFilters] = useState(EMPTY_FILTERS);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [vehicleDialog, setVehicleDialog] = useState(undefined); // null for create, object for edit, undefined for closed
@@ -59,6 +65,9 @@ export function App() {
   const [routeVehicle, setRouteVehicle] = useState(null);
   const [compareItems, setCompareItems] = useState([]);
   const [compareOpen, setCompareOpen] = useState(false);
+  const [garageOpen, setGarageOpen] = useState(false);
+  const [cockpitVehicle, setCockpitVehicle] = useState(null);
+  const [quizOpen, setQuizOpen] = useState(false);
 
   const token = auth?.token;
   const user = auth?.user;
@@ -260,11 +269,66 @@ export function App() {
   </>;
 
   if (route.page !== 'home' && pageVehicle) return <>
-    <ShowroomNavigation vehicles={menuVehicles} onNavigate={navigate} onSection={navigateSection} home={false} user={user} isAdmin={isAdmin} onSignIn={() => setAuthMode('login')} onSignOut={logout}/>
+    <ShowroomNavigation vehicles={menuVehicles} onNavigate={navigate} onSection={navigateSection} home={false} user={user} isAdmin={isAdmin} onSignIn={() => setAuthMode('login')} onSignOut={logout} onOpenGarage={() => setGarageOpen(true)} onOpenQuiz={() => setQuizOpen(true)}/>
     <CompanyAssistant/>
-    {route.page === 'learn' ? <VehicleLearnPage vehicle={pageVehicle} onBack={() => navigate('home')} onDesign={() => navigate('design', pageVehicle)}/>
-      : <VehicleDesignPage vehicle={pageVehicle} onBack={() => navigate('home')} onLearn={() => navigate('learn', pageVehicle)} onPurchase={purchase} onCompare={addToCompare} isAuthenticated={Boolean(token)} busy={busyId === pageVehicle.id}/>}
+    {route.page === 'learn' ? <VehicleLearnPage vehicle={pageVehicle} onBack={() => navigate('home')} onDesign={() => navigate('design', pageVehicle)} onTestDrive={setTestDriveVehicle} onExploreCockpit={setCockpitVehicle}/>
+      : <VehicleDesignPage vehicle={pageVehicle} onBack={() => navigate('home')} onLearn={() => navigate('learn', pageVehicle)} onPurchase={purchase} onCompare={addToCompare} isAuthenticated={Boolean(token)} busy={busyId === pageVehicle.id} onExploreCockpit={setCockpitVehicle}/>}
     {comparisonUi}
+    {testDriveVehicle && (
+      <TestDriveModal
+        vehicle={testDriveVehicle}
+        user={user}
+        token={token}
+        onClose={() => setTestDriveVehicle(null)}
+        onSignIn={() => {
+          setTestDriveVehicle(null);
+          setAuthMode('login');
+        }}
+      />
+    )}
+    {garageOpen && (
+      <MyGarageModal
+        user={user}
+        token={token}
+        onClose={() => setGarageOpen(false)}
+        onExplore={() => {
+          setGarageOpen(false);
+          navigate('home');
+        }}
+        onScheduleTestDrive={(vehicle) => {
+          setGarageOpen(false);
+          setTestDriveVehicle(vehicle);
+        }}
+        onSignIn={() => {
+          setGarageOpen(false);
+          setAuthMode('login');
+        }}
+      />
+    )}
+    {cockpitVehicle && (
+      <InteriorPanoramaModal
+        vehicle={cockpitVehicle}
+        onClose={() => setCockpitVehicle(null)}
+      />
+    )}
+    {quizOpen && (
+      <MatchmakerQuizModal
+        vehicles={menuVehicles}
+        onClose={() => setQuizOpen(false)}
+        onDesign={(vehicle) => {
+          setQuizOpen(false);
+          navigate('design', vehicle);
+        }}
+        onScheduleTestDrive={(vehicle) => {
+          setQuizOpen(false);
+          setTestDriveVehicle(vehicle);
+        }}
+        onAskConcierge={(vehicle, prompt) => {
+          setQuizOpen(false);
+          window.dispatchEvent(new CustomEvent('atelier:ask-concierge', { detail: { prompt } }));
+        }}
+      />
+    )}
     {toast && <div className="vehicle-page-toast" role="status">{toast}<button type="button" onClick={() => setToast('')} aria-label="Dismiss notification"><X size={17}/></button></div>}
     {authMode && <AuthDialog mode={authMode} setMode={setAuthMode} onClose={() => setAuthMode(null)} onSuccess={saveAuth}/>}
   </>;
@@ -276,7 +340,7 @@ export function App() {
         <div className="scroll-progress h-full w-full" />
       </div>
 
-      <ShowroomNavigation vehicles={menuVehicles} onNavigate={navigate} onSection={navigateSection} home user={user} isAdmin={isAdmin} onSignIn={() => setAuthMode('login')} onSignOut={logout}/>
+      <ShowroomNavigation vehicles={menuVehicles} onNavigate={navigate} onSection={navigateSection} home user={user} isAdmin={isAdmin} onSignIn={() => setAuthMode('login')} onSignOut={logout} onOpenGarage={() => setGarageOpen(true)} onOpenQuiz={() => setQuizOpen(true)}/>
       <CompanyAssistant/>
       {comparisonUi}
 
@@ -306,6 +370,16 @@ export function App() {
             </RevealWords>
             <Reveal as="p" immediate delay={750} className="m-0 text-sm sm:text-[15px] text-white/95 text-glow max-w-md">
               A considered collection for wherever the road takes you.
+            </Reveal>
+            <Reveal immediate delay={850} className="mt-4">
+              <button
+                type="button"
+                onClick={() => setQuizOpen(true)}
+                className="inline-flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white border border-white/40 backdrop-blur-md px-5 py-2.5 text-xs font-bold tracking-wide transition shadow-lg rounded-full"
+              >
+                <Sparkles size={15} className="text-yellow-300" />
+                AI Lifestyle Matchmaker Quiz
+              </button>
             </Reveal>
             <button
               type="button"
@@ -568,7 +642,78 @@ export function App() {
             setRestock(v);
             setRestockQuantity(1);
           }}
+          onTestDrive={(v) => {
+            setSelectedVehicle(null);
+            setTestDriveVehicle(v);
+          }}
+          onExploreCockpit={(v) => {
+            setSelectedVehicle(null);
+            setCockpitVehicle(v);
+          }}
           busy={busyId === selectedVehicle.id}
+        />
+      )}
+
+      {/* Test Drive Modal */}
+      {testDriveVehicle && (
+        <TestDriveModal
+          vehicle={testDriveVehicle}
+          user={user}
+          token={token}
+          onClose={() => setTestDriveVehicle(null)}
+          onSignIn={() => {
+            setTestDriveVehicle(null);
+            setAuthMode('login');
+          }}
+        />
+      )}
+
+      {/* Garage & Order Tracker Modal */}
+      {garageOpen && (
+        <MyGarageModal
+          user={user}
+          token={token}
+          onClose={() => setGarageOpen(false)}
+          onExplore={() => {
+            setGarageOpen(false);
+            scrollToCollection();
+          }}
+          onScheduleTestDrive={(vehicle) => {
+            setGarageOpen(false);
+            setTestDriveVehicle(vehicle);
+          }}
+          onSignIn={() => {
+            setGarageOpen(false);
+            setAuthMode('login');
+          }}
+        />
+      )}
+
+      {/* 360 Cockpit Panorama Viewer */}
+      {cockpitVehicle && (
+        <InteriorPanoramaModal
+          vehicle={cockpitVehicle}
+          onClose={() => setCockpitVehicle(null)}
+        />
+      )}
+
+      {/* AI Lifestyle Matchmaker Quiz */}
+      {quizOpen && (
+        <MatchmakerQuizModal
+          vehicles={menuVehicles}
+          onClose={() => setQuizOpen(false)}
+          onDesign={(vehicle) => {
+            setQuizOpen(false);
+            navigate('design', vehicle);
+          }}
+          onScheduleTestDrive={(vehicle) => {
+            setQuizOpen(false);
+            setTestDriveVehicle(vehicle);
+          }}
+          onAskConcierge={(vehicle, prompt) => {
+            setQuizOpen(false);
+            window.dispatchEvent(new CustomEvent('atelier:ask-concierge', { detail: { prompt } }));
+          }}
         />
       )}
 

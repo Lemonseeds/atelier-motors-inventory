@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { ArrowLeft, ArrowRight, Check, ChevronLeft, ChevronRight, ShieldCheck, Sparkles } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Calculator, Check, ChevronLeft, ChevronRight, Compass, ShieldCheck, Sparkles } from 'lucide-react';
 import { formatPrice } from '../lib/catalog.js';
 import { VehicleArtwork } from './VehicleArtwork.jsx';
 import { modelFor } from '../lib/vehicleModels.js';
 import { PAINT_OPTIONS as palette, configuredPrice } from '../lib/configuration.js';
+import { PaymentCalculator } from './PaymentCalculator.jsx';
 
 const VehicleModel3D = React.lazy(() => import('./VehicleModel3D.jsx').then(({ VehicleModel3D: Component }) => ({ default: Component })));
 
@@ -47,7 +48,7 @@ export function getVehiclePhoto(vehicle) {
   return '/sedan.webp';
 }
 
-export function VehicleLearnPage({ vehicle, onBack, onDesign }) {
+export function VehicleLearnPage({ vehicle, onBack, onDesign, onTestDrive, onExploreCockpit }) {
   const story = storyFor(vehicle);
   const [activeFeature, setActiveFeature] = useState(null);
   const [imageFailed, setImageFailed] = useState(false);
@@ -71,7 +72,20 @@ export function VehicleLearnPage({ vehicle, onBack, onDesign }) {
         <span className="vehicle-kicker">ATELIER MOTORS / {vehicle.category.toUpperCase()}</span>
         <h1>{vehicle.make} <em>{vehicle.model}</em></h1>
         <p>{story.line}</p>
-        <div className="vehicle-learn-actions"><button type="button" className="vehicle-solid-button" onClick={onDesign}>Design yours <ArrowRight size={18}/></button><span>From {formatPrice(vehicle.price)}</span></div>
+        <div className="vehicle-learn-actions">
+          <button type="button" className="vehicle-solid-button" onClick={onDesign}>Design yours <ArrowRight size={18}/></button>
+          {onTestDrive && (
+            <button type="button" className="vehicle-secondary-button" onClick={() => onTestDrive(vehicle)}>
+              Schedule test drive <ArrowRight size={16}/>
+            </button>
+          )}
+          {onExploreCockpit && (
+            <button type="button" className="vehicle-secondary-button" onClick={() => onExploreCockpit(vehicle)}>
+              360° Cockpit <Compass size={16}/>
+            </button>
+          )}
+          <span>From {formatPrice(vehicle.price)}</span>
+        </div>
       </div>
       <div className="vehicle-learn-art">
         {photo && !imageFailed ? (
@@ -92,16 +106,28 @@ export function VehicleLearnPage({ vehicle, onBack, onDesign }) {
       <div><p>{story.detail}</p><div className="vehicle-learn-features">{story.features.map((feature, i) => <div key={feature} className={activeFeature === i ? 'is-open' : ''}><button type="button" aria-expanded={activeFeature === i} aria-controls={`vehicle-feature-${vehicle.id}-${i}`} onClick={() => setActiveFeature(activeFeature === i ? null : i)}><span>0{i + 1}</span><strong>{feature}</strong><ArrowRight size={17}/></button><div id={`vehicle-feature-${vehicle.id}-${i}`} className="vehicle-feature-detail" hidden={activeFeature !== i}><p>{details[i]}</p></div></div>)}</div></div>
     </section>
     <section className="vehicle-learn-gallery shell"><div className="vehicle-learn-gallery-copy"><span className="vehicle-kicker">FORM & FUNCTION</span><h2>A different angle<br/>on what moves you.</h2><p>Explore the shape of your next chapter, then make it yours.</p><button type="button" className="vehicle-text-button" onClick={onDesign}>Explore the configurator <ArrowRight size={18}/></button></div><div className="vehicle-learn-side"><VehicleArtwork vehicle={vehicle} color="#5d6c7d" view="side" className="w-full h-full"/></div></section>
-    <section className="vehicle-learn-end"><span>YOUR NEXT CHAPTER STARTS HERE</span><h2>Make it yours.</h2><button type="button" className="vehicle-solid-button" onClick={onDesign}>Design {vehicle.make} {vehicle.model} <ArrowRight size={18}/></button></section>
+    <section className="vehicle-learn-end">
+      <span>YOUR NEXT CHAPTER STARTS HERE</span>
+      <h2>Make it yours.</h2>
+      <div className="flex flex-wrap items-center justify-center gap-4">
+        <button type="button" className="vehicle-solid-button" onClick={onDesign}>Design {vehicle.make} {vehicle.model} <ArrowRight size={18}/></button>
+        {onTestDrive && (
+          <button type="button" className="vehicle-secondary-button" onClick={() => onTestDrive(vehicle)}>
+            Book private test drive <ArrowRight size={16}/>
+          </button>
+        )}
+      </div>
+    </section>
   </main>;
 }
 
-export function VehicleDesignPage({ vehicle, onBack, onLearn, onPurchase, onCompare, isAuthenticated, busy }) {
+export function VehicleDesignPage({ vehicle, onBack, onLearn, onPurchase, onCompare, isAuthenticated, busy, onExploreCockpit }) {
   const [angle, setAngle] = useState(0);
   const [paint, setPaint] = useState(0);
   const [trim, setTrim] = useState(0);
   const [interior, setInterior] = useState(0);
   const [details, setDetails] = useState(false);
+  const [calcOpen, setCalcOpen] = useState(false);
   const [zip, setZip] = useState('');
   const total = configuredPrice(vehicle, { paint, trim, interior });
   const model = modelFor(vehicle);
@@ -121,8 +147,42 @@ export function VehicleDesignPage({ vehicle, onBack, onLearn, onPurchase, onComp
       <div className="vehicle-design-intro"><span className="vehicle-kicker">MAKE IT YOURS</span><h1>{vehicle.make} <em>{vehicle.model}</em></h1><p>{vehicle.year} {vehicle.category} · {vehicle.quantity > 0 ? `${vehicle.quantity} available` : 'Currently unavailable'}</p></div>
       <div className="vehicle-design-section"><div className="vehicle-design-section-title"><h2>Choose your edition</h2><span>01</span></div><div className="vehicle-choice-list">{['Signature', 'Performance'].map((name, i) => <button type="button" key={name} className={trim === i ? 'is-selected' : ''} onClick={() => setTrim(i)}><span><b>{name}</b><small>{i ? 'Sharper response and expressive detail' : 'An elegant starting point'}</small></span><strong>{i ? `+${formatPrice(4500)}` : 'Included'}</strong></button>)}</div></div>
       <div className="vehicle-design-section"><div className="vehicle-design-section-title"><h2>Exterior color</h2><span>02</span></div><p className="vehicle-option-name">{palette[paint].name} <span>{palette[paint].price ? `+${formatPrice(palette[paint].price)}` : 'Included'}</span></p><div className="vehicle-swatch-list" role="group" aria-label="Exterior color">{palette.map((color, i) => <button type="button" key={color.name} aria-label={color.name} aria-pressed={paint === i} title={color.name} className={paint === i ? 'is-selected' : ''} onClick={() => setPaint(i)}><span style={{ backgroundColor: color.value }}/></button>)}</div></div>
-      <div className="vehicle-design-section"><div className="vehicle-design-section-title"><h2>Interior</h2><span>03</span></div><div className="vehicle-choice-list">{['Slate', 'Ivory'].map((name, i) => <button type="button" key={name} className={interior === i ? 'is-selected' : ''} onClick={() => { setInterior(i); setAngle(3); }}><span><b>{name}</b><small>{i ? 'Light, open and inviting' : 'Understated and tactile'}</small></span><strong>{i ? `+${formatPrice(1500)}` : 'Included'}</strong></button>)}</div></div>
-      <div className="vehicle-design-section vehicle-design-summary"><div className="vehicle-design-section-title"><h2>Your {vehicle.model}</h2><span>04</span></div><p>Configured price <strong>{formatPrice(total)}</strong></p><button type="button" className="vehicle-price-toggle" onClick={() => setDetails(!details)} aria-expanded={details}>Show pricing details <ChevronRight size={16} className={details ? 'rotate-90' : ''}/></button>{details && <div className="vehicle-price-breakdown"><p>Base price <span>{formatPrice(vehicle.price)}</span></p><p>{palette[paint].name} <span>{formatPrice(palette[paint].price)}</span></p><p>{trim ? 'Performance edition' : 'Signature edition'} <span>{formatPrice(trim ? 4500 : 0)}</span></p><p>{interior ? 'Ivory interior' : 'Slate interior'} <span>{formatPrice(interior ? 1500 : 0)}</span></p></div>}{onCompare && <button type="button" className="vehicle-add-compare" onClick={() => onCompare(vehicle, { paint, trim, interior })}>Add this build to compare <ArrowRight size={16}/></button>}</div>
+      <div className="vehicle-design-section">
+        <div className="vehicle-design-section-title"><h2>Interior</h2><span>03</span></div>
+        <div className="vehicle-choice-list">{['Slate', 'Ivory'].map((name, i) => <button type="button" key={name} className={interior === i ? 'is-selected' : ''} onClick={() => { setInterior(i); setAngle(3); }}><span><b>{name}</b><small>{i ? 'Light, open and inviting' : 'Understated and tactile'}</small></span><strong>{i ? `+${formatPrice(1500)}` : 'Included'}</strong></button>)}</div>
+        {onExploreCockpit && (
+          <button type="button" onClick={() => onExploreCockpit(vehicle)} className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-royal hover:underline">
+            <Compass size={14} /> Explore 360° Interior Cockpit
+          </button>
+        )}
+      </div>
+      <div className="vehicle-design-section vehicle-design-summary">
+        <div className="vehicle-design-section-title"><h2>Your {vehicle.model}</h2><span>04</span></div>
+        <p>Configured price <strong>{formatPrice(total)}</strong></p>
+        <button type="button" className="vehicle-price-toggle" onClick={() => setDetails(!details)} aria-expanded={details}>
+          Show pricing details <ChevronRight size={16} className={details ? 'rotate-90' : ''}/>
+        </button>
+        {details && (
+          <div className="vehicle-price-breakdown">
+            <p>Base price <span>{formatPrice(vehicle.price)}</span></p>
+            <p>{palette[paint].name} <span>{formatPrice(palette[paint].price)}</span></p>
+            <p>{trim ? 'Performance edition' : 'Signature edition'} <span>{formatPrice(trim ? 4500 : 0)}</span></p>
+            <p>{interior ? 'Ivory interior' : 'Slate interior'} <span>{formatPrice(interior ? 1500 : 0)}</span></p>
+          </div>
+        )}
+        <div className="mt-2 pt-2 border-t border-[#e2e7ef]">
+          <button type="button" className="vehicle-price-toggle flex items-center justify-between w-full" onClick={() => setCalcOpen(!calcOpen)} aria-expanded={calcOpen}>
+            <span className="inline-flex items-center gap-1.5"><Calculator size={14}/> Estimate monthly lease / loan</span>
+            <ChevronRight size={16} className={calcOpen ? 'rotate-90' : ''}/>
+          </button>
+          {calcOpen && (
+            <div className="mt-3">
+              <PaymentCalculator vehiclePrice={total} />
+            </div>
+          )}
+        </div>
+        {onCompare && <button type="button" className="vehicle-add-compare mt-2" onClick={() => onCompare(vehicle, { paint, trim, interior })}>Add this build to compare <ArrowRight size={16}/></button>}
+      </div>
       <div className="vehicle-design-checkout"><label htmlFor="delivery-zip">Delivery ZIP <span>Optional</span></label><input id="delivery-zip" value={zip} onChange={(event) => setZip(event.target.value.replace(/\D/g, '').slice(0, 5))} inputMode="numeric" autoComplete="postal-code" placeholder="Enter ZIP"/><p><ShieldCheck size={17}/> A member of our team will confirm delivery and payment details.</p><button type="button" className="vehicle-solid-button" disabled={busy || vehicle.quantity === 0} onClick={() => onPurchase(vehicle)}>{vehicle.quantity === 0 ? 'Currently unavailable' : isAuthenticated ? 'Confirm purchase' : 'Sign in to continue'} <ArrowRight size={18}/></button><small>Selection and pricing are shown for this showroom experience. Final terms are confirmed directly with Atelier Motors.</small></div>
     </aside>
   </main>;

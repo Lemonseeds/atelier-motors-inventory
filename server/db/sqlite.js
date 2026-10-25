@@ -35,10 +35,24 @@ export function schemaSql(idColumn) {
       vehicle_id INTEGER NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE,
       preferred_date TEXT NOT NULL,
       time_window TEXT NOT NULL CHECK (time_window IN ('Morning', 'Afternoon', 'Evening')),
+      experience_type TEXT NOT NULL DEFAULT 'Showroom',
+      location TEXT NOT NULL DEFAULT 'Atelier Flagship',
       status TEXT NOT NULL DEFAULT 'requested' CHECK (status IN ('requested', 'confirmed', 'cancelled')),
       created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
     );
-    CREATE INDEX IF NOT EXISTS idx_test_drives_user ON test_drives(user_id, created_at);
+    CREATE TABLE IF NOT EXISTS orders (
+      id ${idColumn},
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      vehicle_id INTEGER NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE,
+      vin TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'confirmed' CHECK (status IN ('confirmed', 'handcrafting', 'inspection', 'transit', 'delivered')),
+      configuration TEXT NOT NULL DEFAULT '{}',
+      total_price DOUBLE PRECISION NOT NULL,
+      delivery_address TEXT NOT NULL DEFAULT '',
+      estimated_delivery TEXT NOT NULL,
+      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE INDEX IF NOT EXISTS idx_orders_user ON orders(user_id, created_at);
   `;
 }
 
@@ -52,5 +66,7 @@ export function createSqliteDatabase(path) {
   db.pragma('journal_mode = WAL');
   db.pragma('foreign_keys = ON');
   db.exec(schemaSql('INTEGER PRIMARY KEY AUTOINCREMENT'));
+  try { db.exec("ALTER TABLE test_drives ADD COLUMN experience_type TEXT NOT NULL DEFAULT 'Showroom'"); } catch {}
+  try { db.exec("ALTER TABLE test_drives ADD COLUMN location TEXT NOT NULL DEFAULT 'Atelier Flagship'"); } catch {}
   return db;
 }
