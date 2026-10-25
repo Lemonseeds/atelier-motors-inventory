@@ -20,9 +20,11 @@ import { VehicleDetailDialog } from './components/VehicleDetailDialog.jsx';
 import { VehicleDialog } from './components/VehicleDialog.jsx';
 import { ShowroomNavigation } from './components/ShowroomNavigation.jsx';
 import { CompanyAssistant } from './components/CompanyAssistant.jsx';
+import { VehicleComparePanel } from './components/VehicleComparePanel.jsx';
 import { VehicleDesignPage, VehicleLearnPage } from './components/VehiclePages.jsx';
 import { AboutSection, ExperienceSection, Interlude, MarqueeBand } from './components/EditorialSections.jsx';
 import { ALL_CATEGORIES, CATEGORIES, EMPTY_FILTERS, PREVIEW_VEHICLES, filterVehicles, toSearchParams } from './lib/catalog.js';
+import { defaultConfiguration } from './lib/configuration.js';
 import { Reveal, RevealWords, scrollToTarget, useScene, useScrollMotion } from './lib/motion.jsx';
 
 const vehicleSlug = (vehicle) => `${vehicle.make}-${vehicle.model}`.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
@@ -55,6 +57,8 @@ export function App() {
   const [loading, setLoading] = useState(false);
   const [route, setRoute] = useState(() => parseVehicleRoute(window.location.pathname));
   const [routeVehicle, setRouteVehicle] = useState(null);
+  const [compareItems, setCompareItems] = useState([]);
+  const [compareOpen, setCompareOpen] = useState(false);
 
   const token = auth?.token;
   const user = auth?.user;
@@ -238,11 +242,29 @@ export function App() {
     } else scrollToTarget(target);
   }
 
+  function addToCompare(vehicle, selection = defaultConfiguration) {
+    if (!compareItems.some((item) => item.vehicle.id === vehicle.id) && compareItems.length >= 3) { setToast('Compare up to three cars at a time.'); return; }
+    setCompareItems((current) => {
+      if (current.some((item) => item.vehicle.id === vehicle.id)) return current.map((item) => item.vehicle.id === vehicle.id ? { vehicle, selection } : item);
+      return [...current, { vehicle, selection }];
+    });
+    setToast(`${vehicle.make} ${vehicle.model} added to compare.`);
+  }
+  function toggleCompare(vehicle) {
+    if (compareItems.some((item) => item.vehicle.id === vehicle.id)) setCompareItems((current) => current.filter((item) => item.vehicle.id !== vehicle.id));
+    else addToCompare(vehicle);
+  }
+  const comparisonUi = <>
+    {compareItems.length > 0 && <div className="compare-dock"><span>{compareItems.length} {compareItems.length === 1 ? 'car' : 'cars'} selected</span><button type="button" disabled={compareItems.length < 2} onClick={() => setCompareOpen(true)}>Compare cars <ArrowRight size={15}/></button><button type="button" aria-label="Clear comparison" onClick={() => setCompareItems([])}><X size={16}/></button></div>}
+    {compareOpen && <VehicleComparePanel items={compareItems} onClose={() => setCompareOpen(false)} onRemove={(id) => setCompareItems((current) => current.filter((item) => item.vehicle.id !== id))} onUpdate={(id, changes) => setCompareItems((current) => current.map((item) => item.vehicle.id === id ? { ...item, selection: { ...item.selection, ...changes } } : item))} onDesign={(vehicle) => navigate('design', vehicle)}/>}
+  </>;
+
   if (route.page !== 'home' && pageVehicle) return <>
     <ShowroomNavigation vehicles={menuVehicles} onNavigate={navigate} onSection={navigateSection} home={false} user={user} isAdmin={isAdmin} onSignIn={() => setAuthMode('login')} onSignOut={logout}/>
     <CompanyAssistant/>
     {route.page === 'learn' ? <VehicleLearnPage vehicle={pageVehicle} onBack={() => navigate('home')} onDesign={() => navigate('design', pageVehicle)}/>
-      : <VehicleDesignPage vehicle={pageVehicle} onBack={() => navigate('home')} onLearn={() => navigate('learn', pageVehicle)} onPurchase={purchase} isAuthenticated={Boolean(token)} busy={busyId === pageVehicle.id}/>}
+      : <VehicleDesignPage vehicle={pageVehicle} onBack={() => navigate('home')} onLearn={() => navigate('learn', pageVehicle)} onPurchase={purchase} onCompare={addToCompare} isAuthenticated={Boolean(token)} busy={busyId === pageVehicle.id}/>}
+    {comparisonUi}
     {toast && <div className="vehicle-page-toast" role="status">{toast}<button type="button" onClick={() => setToast('')} aria-label="Dismiss notification"><X size={17}/></button></div>}
     {authMode && <AuthDialog mode={authMode} setMode={setAuthMode} onClose={() => setAuthMode(null)} onSuccess={saveAuth}/>}
   </>;
@@ -256,6 +278,7 @@ export function App() {
 
       <ShowroomNavigation vehicles={menuVehicles} onNavigate={navigate} onSection={navigateSection} home user={user} isAdmin={isAdmin} onSignIn={() => setAuthMode('login')} onSignOut={logout}/>
       <CompanyAssistant/>
+      {comparisonUi}
 
       <main id="top">
         {/* Hero Section: layered parallax — photo sinks, haze drifts, copy lifts away */}
@@ -464,6 +487,8 @@ export function App() {
                   onSelect={(v) => setSelectedVehicle(v)}
                   onLearn={(v) => navigate('learn', v)}
                   onPurchase={(v) => navigate('design', v)}
+                  onCompare={toggleCompare}
+                  isCompared={compareItems.some((item) => item.vehicle.id === vehicle.id)}
                   onEdit={(v) => setVehicleDialog(v)}
                   onRestock={(v) => {
                     setRestock(v);

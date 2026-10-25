@@ -3,6 +3,7 @@ import { ArrowLeft, ArrowRight, Check, ChevronLeft, ChevronRight, ShieldCheck, S
 import { formatPrice } from '../lib/catalog.js';
 import { VehicleArtwork } from './VehicleArtwork.jsx';
 import { modelFor } from '../lib/vehicleModels.js';
+import { PAINT_OPTIONS as palette, configuredPrice } from '../lib/configuration.js';
 
 const VehicleModel3D = React.lazy(() => import('./VehicleModel3D.jsx').then(({ VehicleModel3D: Component }) => ({ default: Component })));
 
@@ -12,14 +13,6 @@ function ModelPreview(props) {
   </React.Suspense>;
 }
 
-const palette = [
-  { name: 'Glacier Silver', value: '#9faab5', price: 0 },
-  { name: 'Obsidian Black', value: '#272d38', price: 1200 },
-  { name: 'Pearl White', value: '#d9d9ce', price: 1200 },
-  { name: 'Carmine Red', value: '#a43134', price: 1800 },
-  { name: 'Midnight Blue', value: '#29486c', price: 1800 },
-  { name: 'Forest Green', value: '#355d50', price: 1800 },
-];
 const views = [
   { key: 'front', label: 'Front view' },
   { key: 'side', label: 'Side profile' },
@@ -78,14 +71,14 @@ export function VehicleLearnPage({ vehicle, onBack, onDesign }) {
   </main>;
 }
 
-export function VehicleDesignPage({ vehicle, onBack, onLearn, onPurchase, isAuthenticated, busy }) {
+export function VehicleDesignPage({ vehicle, onBack, onLearn, onPurchase, onCompare, isAuthenticated, busy }) {
   const [angle, setAngle] = useState(0);
   const [paint, setPaint] = useState(0);
   const [trim, setTrim] = useState(0);
   const [interior, setInterior] = useState(0);
   const [details, setDetails] = useState(false);
   const [zip, setZip] = useState('');
-  const total = vehicle.price + palette[paint].price + (trim ? 4500 : 0) + (interior ? 1500 : 0);
+  const total = configuredPrice(vehicle, { paint, trim, interior });
   const model = modelFor(vehicle);
 
   useEffect(() => { setAngle(0); setPaint(0); setTrim(0); setInterior(0); }, [vehicle.id]);
@@ -104,7 +97,7 @@ export function VehicleDesignPage({ vehicle, onBack, onLearn, onPurchase, isAuth
       <div className="vehicle-design-section"><div className="vehicle-design-section-title"><h2>Choose your edition</h2><span>01</span></div><div className="vehicle-choice-list">{['Signature', 'Performance'].map((name, i) => <button type="button" key={name} className={trim === i ? 'is-selected' : ''} onClick={() => setTrim(i)}><span><b>{name}</b><small>{i ? 'Sharper response and expressive detail' : 'An elegant starting point'}</small></span><strong>{i ? `+${formatPrice(4500)}` : 'Included'}</strong></button>)}</div></div>
       <div className="vehicle-design-section"><div className="vehicle-design-section-title"><h2>Exterior color</h2><span>02</span></div><p className="vehicle-option-name">{palette[paint].name} <span>{palette[paint].price ? `+${formatPrice(palette[paint].price)}` : 'Included'}</span></p><div className="vehicle-swatch-list" role="group" aria-label="Exterior color">{palette.map((color, i) => <button type="button" key={color.name} aria-label={color.name} aria-pressed={paint === i} title={color.name} className={paint === i ? 'is-selected' : ''} onClick={() => setPaint(i)}><span style={{ backgroundColor: color.value }}/></button>)}</div></div>
       <div className="vehicle-design-section"><div className="vehicle-design-section-title"><h2>Interior</h2><span>03</span></div><div className="vehicle-choice-list">{['Slate', 'Ivory'].map((name, i) => <button type="button" key={name} className={interior === i ? 'is-selected' : ''} onClick={() => { setInterior(i); setAngle(3); }}><span><b>{name}</b><small>{i ? 'Light, open and inviting' : 'Understated and tactile'}</small></span><strong>{i ? `+${formatPrice(1500)}` : 'Included'}</strong></button>)}</div></div>
-      <div className="vehicle-design-section vehicle-design-summary"><div className="vehicle-design-section-title"><h2>Your {vehicle.model}</h2><span>04</span></div><p>Configured price <strong>{formatPrice(total)}</strong></p><button type="button" className="vehicle-price-toggle" onClick={() => setDetails(!details)} aria-expanded={details}>Show pricing details <ChevronRight size={16} className={details ? 'rotate-90' : ''}/></button>{details && <div className="vehicle-price-breakdown"><p>Base price <span>{formatPrice(vehicle.price)}</span></p><p>{palette[paint].name} <span>{formatPrice(palette[paint].price)}</span></p><p>{trim ? 'Performance edition' : 'Signature edition'} <span>{formatPrice(trim ? 4500 : 0)}</span></p><p>{interior ? 'Ivory interior' : 'Slate interior'} <span>{formatPrice(interior ? 1500 : 0)}</span></p></div>}</div>
+      <div className="vehicle-design-section vehicle-design-summary"><div className="vehicle-design-section-title"><h2>Your {vehicle.model}</h2><span>04</span></div><p>Configured price <strong>{formatPrice(total)}</strong></p><button type="button" className="vehicle-price-toggle" onClick={() => setDetails(!details)} aria-expanded={details}>Show pricing details <ChevronRight size={16} className={details ? 'rotate-90' : ''}/></button>{details && <div className="vehicle-price-breakdown"><p>Base price <span>{formatPrice(vehicle.price)}</span></p><p>{palette[paint].name} <span>{formatPrice(palette[paint].price)}</span></p><p>{trim ? 'Performance edition' : 'Signature edition'} <span>{formatPrice(trim ? 4500 : 0)}</span></p><p>{interior ? 'Ivory interior' : 'Slate interior'} <span>{formatPrice(interior ? 1500 : 0)}</span></p></div>}{onCompare && <button type="button" className="vehicle-add-compare" onClick={() => onCompare(vehicle, { paint, trim, interior })}>Add this build to compare <ArrowRight size={16}/></button>}</div>
       <div className="vehicle-design-checkout"><label htmlFor="delivery-zip">Delivery ZIP <span>Optional</span></label><input id="delivery-zip" value={zip} onChange={(event) => setZip(event.target.value.replace(/\D/g, '').slice(0, 5))} inputMode="numeric" autoComplete="postal-code" placeholder="Enter ZIP"/><p><ShieldCheck size={17}/> A member of our team will confirm delivery and payment details.</p><button type="button" className="vehicle-solid-button" disabled={busy || vehicle.quantity === 0} onClick={() => onPurchase(vehicle)}>{vehicle.quantity === 0 ? 'Currently unavailable' : isAuthenticated ? 'Confirm purchase' : 'Sign in to continue'} <ArrowRight size={18}/></button><small>Selection and pricing are shown for this showroom experience. Final terms are confirmed directly with Atelier Motors.</small></div>
     </aside>
   </main>;

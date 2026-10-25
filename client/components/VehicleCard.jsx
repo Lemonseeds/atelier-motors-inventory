@@ -7,7 +7,7 @@ import { VehicleArtwork } from './VehicleArtwork.jsx';
  * Showroom vehicle card with image, category/stock badges,
  * dynamic pricing, and role-based action controls.
  */
-export function VehicleCard({ vehicle, isAdmin, onPurchase, onLearn, onEdit, onRestock, onDelete, onSelect, busy }) {
+export function VehicleCard({ vehicle, isAdmin, onPurchase, onLearn, onCompare, isCompared, onEdit, onRestock, onDelete, onSelect, busy }) {
   const [imageFailed, setImageFailed] = useState(false);
   const isSoldOut = vehicle.quantity === 0;
 
@@ -87,6 +87,7 @@ export function VehicleCard({ vehicle, isAdmin, onPurchase, onLearn, onEdit, onR
             {isSoldOut ? 'Unavailable' : 'Purchase car'} <ArrowRight size={16} />
           </button>
         </div>
+        {onCompare && <button type="button" className="vehicle-card-compare" aria-pressed={Boolean(isCompared)} onClick={(event) => { event.stopPropagation(); onCompare(vehicle); }}>{isCompared ? 'Added to compare' : 'Add to compare'}</button>}
 
         {isAdmin && (
           <div className="mt-4 flex items-center gap-4 border-t border-line pt-3 text-[11px] font-bold">

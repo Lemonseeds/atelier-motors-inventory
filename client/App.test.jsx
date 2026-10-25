@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { App } from './App.jsx';
 import { api } from './api.js';
@@ -50,5 +50,18 @@ describe('App', () => {
     await user.click(screen.getByRole('button', { name: 'Design yours' }));
     expect(window.location.pathname).toBe('/vehicles/solenne-r8/design');
     expect(screen.getByRole('button', { name: 'Carmine Red' })).toBeInTheDocument();
+  });
+
+  it('compares two cars and updates configured option prices', async () => {
+    const user = userEvent.setup();
+    render(<App/>);
+    const addButtons = screen.getAllByRole('button', { name: 'Add to compare' });
+    await user.click(addButtons[0]);
+    await user.click(addButtons[1]);
+    await user.click(screen.getByRole('button', { name: /Compare cars/i }));
+    expect(screen.getByRole('dialog', { name: 'Compare vehicles' })).toBeInTheDocument();
+    expect(within(screen.getByRole('dialog', { name: 'Compare vehicles' })).getByRole('heading', { name: 'Northline Summit X' })).toBeInTheDocument();
+    await user.selectOptions(screen.getByLabelText('Paint', { selector: '#compare-paint-1' }), '3');
+    expect(screen.getByText('$91,200')).toBeInTheDocument();
   });
 });
