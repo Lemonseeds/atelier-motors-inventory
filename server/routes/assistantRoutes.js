@@ -43,7 +43,7 @@ STRICT CONCIERGE GUIDELINES:
 5. If a question is completely unrelated to Atelier Motors, vehicles, or the buying/customizing process (e.g. general trivia, coding, other topics), politely decline with: "${assistantBoundary}".`;
 }
 
-export async function askGroq({ question, vehicles, apiKey, model = 'llama-3.3-70b-versatile', fetchFn = globalThis.fetch }) {
+export async function askGroq({ question, vehicles, apiKey, model = process.env.GROQ_MODEL || 'openai/gpt-oss-120b', fetchFn = globalThis.fetch }) {
   const systemPrompt = buildGroqSystemPrompt(vehicles);
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 8000);
@@ -136,7 +136,7 @@ export function localAnswer(question, vehicles) {
 }
 
 /** Public, bounded chat route. Uses Groq Cloud LLM when configured, with local smart recommendation fallback. */
-export function createAssistantRouter({ vehicles, groqApiKey = process.env.GROQ_API_KEY, groqModel = process.env.GROQ_MODEL || 'llama-3.3-70b-versatile', fetchFn = globalThis.fetch }) {
+export function createAssistantRouter({ vehicles, groqApiKey = process.env.GROQ_API_KEY, groqModel = process.env.GROQ_MODEL || 'openai/gpt-oss-120b', fetchFn = globalThis.fetch }) {
   const router = Router();
   const hits = new Map();
   router.post('/', async (req, res) => {
