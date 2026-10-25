@@ -158,17 +158,17 @@ html.lenis, html.lenis body { height: auto; }
   /* ---- Framed image stages: clip-path opens as the frame enters ---- */
   .stage-frame {
     clip-path: inset(
-      calc((1 - var(--enter)) * 6%) calc((1 - var(--enter)) * 7%)
-      round calc((1 - var(--enter)) * 32px)
+      calc((1 - var(--enter)) * 5%) calc((1 - var(--enter)) * 6%)
+      round calc((1 - var(--enter)) * 28px)
     );
   }
-  /* Oversized image layer that drifts inside its frame */
+  /* Balanced image layer that drifts inside its frame without excessive crop/zoom */
   .stage-media {
-    inset: -14% 0;
-    transform: translate3d(0, calc(var(--center) * 10%), 0) scale(calc(1.12 - var(--enter) * 0.06));
+    inset: -6% 0;
+    transform: translate3d(0, calc(var(--center) * 7%), 0) scale(calc(1.02 - var(--enter) * 0.015));
   }
-  .float-slow { transform: translate3d(0, calc(var(--center) * 26px), 0); }
-  .float-fast { transform: translate3d(0, calc(var(--center) * -64px), 0); }
+  .float-slow { transform: translate3d(0, calc(var(--center) * 24px), 0); }
+  .float-fast { transform: translate3d(0, calc(var(--center) * -54px), 0); }
 
   /* Staggered card columns drift at different speeds on wide screens */
   @media (min-width: 46.875rem) {

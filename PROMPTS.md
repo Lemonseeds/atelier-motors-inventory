@@ -402,4 +402,23 @@ can you revert to the original photo for this one?
 - Preserved edge-to-edge full bleed hero framing and responsive parallax scrolling.
 - Verified test suite (43 server, 52 client tests, all 95 passing) and clean production build with `npm run build`.
 
+---
+
+### User → Antigravity (Prompt 23)
+```text
+Also this photo looks a bit odd. Can you do something about it?? I like the transition maybe just zoom it out a bit??
+```
+
+### Antigravity Actions (Prompt 23)
+- **Diagnosed Over-Zooming on Editorial Stage Image:**
+  - In `EditorialSections.jsx`, the "Our Experience" SUV section had `h-[128%]` combined with `.stage-media`'s `inset: -14% 0` and CSS `scale(calc(1.12 - var(--enter) * 0.06))`, scaling the 2:1 image up by over 140% and cutting off the vehicle's rear wheel, roofline, front bumper, and architectural surroundings.
+- **Balanced Zoom & Framed Stance:**
+  - Adjusted `.stage-media` in `client/style.css` to `inset: -6% 0` and gentle scale `scale(calc(1.02 - var(--enter) * 0.015))` with refined vertical parallax drift `translate3d(0, calc(var(--center) * 7%), 0)`.
+  - Refined container min-height in `EditorialSections.jsx` (`min-h-[440px] sm:min-h-[540px] lg:min-h-[580px]`) and adjusted image height from `h-[128%]` to `h-[112%]` with centered focal point (`object-[center_50%]`).
+  - Preserved the full parallax motion (clip-path opening transition, floating glass badge and narrative cards) while revealing the full vehicle silhouette, wheels, and ambient architecture.
+- **Testing & Verification:**
+  - Full test suite passing: 43 backend tests + 52 frontend tests = 95/95 tests passing.
+  - Verified clean production build with `npm run build`.
+
+
 

@@ -75,11 +75,11 @@ export function ExperienceSection({ onExplore }) {
       </div>
 
       <div ref={stageRef} data-scene className="relative mt-10">
-        <div className="stage-frame will-move relative min-h-[460px] overflow-hidden bg-[#8098b9] sm:min-h-[600px]">
-          <img src="/suv.webp" alt="Silver SUV in a quiet architectural setting" loading="lazy" className="stage-media will-move absolute h-[128%] w-full object-cover object-[center_58%]" />
+        <div className="stage-frame will-move relative min-h-[440px] overflow-hidden bg-[#8098b9] sm:min-h-[540px] lg:min-h-[580px]">
+          <img src="/suv.webp" alt="Silver SUV in a quiet architectural setting" loading="lazy" className="stage-media will-move absolute h-[112%] w-full object-cover object-[center_50%]" />
           <div className="absolute inset-0 bg-gradient-to-r from-[#172844]/80 via-[#233e63]/28 to-transparent" />
           <div className="absolute inset-0 bg-gradient-to-t from-[#172844]/55 via-transparent to-transparent" />
-          <div className="relative z-1 flex min-h-[460px] flex-col justify-between p-6 text-white sm:min-h-[600px] sm:p-10">
+          <div className="relative z-1 flex min-h-[440px] flex-col justify-between p-6 text-white sm:min-h-[540px] lg:min-h-[580px] sm:p-10">
             <span className="float-slow will-move w-fit border border-white/45 bg-white/20 px-4 py-2 text-[10px] font-bold tracking-[.22em] backdrop-blur-sm">AN OPEN ROAD AHEAD</span>
             <div className="float-fast will-move max-w-md border border-white/35 bg-white/20 p-6 backdrop-blur-sm sm:p-8">
               <Sparkles size={22} strokeWidth={1.5} />
@@ -210,7 +210,7 @@ export function AboutSection({ onExplore }) {
       <section id="about" className="shell scroll-mt-6 pt-20 sm:pt-28" aria-labelledby="about-title">
         <div ref={stageRef} data-scene className="relative">
         <div className="stage-frame will-move relative overflow-hidden bg-[#243b63] text-white">
-          <img src="/coupe.webp" alt="Performance coupe in a calm, modern setting" loading="lazy" className="stage-media will-move absolute h-[128%] w-full object-cover object-[60%_center] opacity-55" />
+          <img src="/coupe.webp" alt="Performance coupe in a calm, modern setting" loading="lazy" className="stage-media will-move absolute h-[112%] w-full object-cover object-[60%_center] opacity-55" />
           <div className="absolute inset-0 bg-gradient-to-r from-[#182a49]/95 via-[#20395c]/72 to-[#1e3452]/15" />
           <div className="relative z-1 grid min-h-[560px] items-end gap-12 p-7 sm:p-12 lg:grid-cols-[1fr_.55fr] lg:items-center lg:p-16">
             <div className="max-w-[630px]">
