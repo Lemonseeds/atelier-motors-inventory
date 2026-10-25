@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ArrowLeft, ArrowRight, Calculator, Check, ChevronLeft, ChevronRight, Compass, ShieldCheck, Sparkles } from 'lucide-react';
-import { formatPrice } from '../lib/catalog.js';
+import { formatPrice, MODEL_PHOTOS } from '../lib/catalog.js';
 import { VehicleArtwork } from './VehicleArtwork.jsx';
 import { modelFor } from '../lib/vehicleModels.js';
 import { PAINT_OPTIONS as palette, configuredPrice } from '../lib/configuration.js';
@@ -42,6 +42,8 @@ const storyFor = (vehicle) => stories[`${vehicle.make} ${vehicle.model}`] || { l
 
 export function getVehiclePhoto(vehicle) {
   if (vehicle?.imageUrl && vehicle.imageUrl.trim()) return vehicle.imageUrl;
+  const key = `${vehicle?.make} ${vehicle?.model}`;
+  if (MODEL_PHOTOS[key]) return MODEL_PHOTOS[key];
   if (vehicle?.category === 'SUV') return '/suv.webp';
   if (vehicle?.category === 'Coupe' || vehicle?.category === 'Convertible') return '/coupe.webp';
   if (vehicle?.category === 'Electric' || vehicle?.category === 'Sedan') return '/sedan.webp';

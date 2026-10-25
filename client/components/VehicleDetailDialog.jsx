@@ -17,7 +17,7 @@ import {
   Zap
 } from 'lucide-react';
 import { Modal } from './Modal.jsx';
-import { formatPrice, MODEL_SPECS } from '../lib/catalog.js';
+import { formatPrice, MODEL_PHOTOS, MODEL_SPECS } from '../lib/catalog.js';
 import { PaymentCalculator } from './PaymentCalculator.jsx';
 
 /**
@@ -76,6 +76,7 @@ export function VehicleDetailDialog({
   const [showCalculator, setShowCalculator] = useState(false);
   const isSoldOut = vehicle.quantity === 0;
   const specs = getVehicleSpecs(vehicle);
+  const photo = vehicle.imageUrl || MODEL_PHOTOS[`${vehicle.make} ${vehicle.model}`];
 
   return (
     <Modal
@@ -87,10 +88,10 @@ export function VehicleDetailDialog({
       <div className="space-y-6">
         {/* Main Vehicle Showcase Image */}
         <div className="relative aspect-[16/9] w-full overflow-hidden rounded bg-[#dae3f1] shadow-inner">
-          {vehicle.imageUrl && !imageFailed ? (
+          {photo && !imageFailed ? (
             <img
               className="h-full w-full object-cover object-center saturate-[.85] transition duration-500 hover:scale-105"
-              src={vehicle.imageUrl}
+              src={photo}
               alt={`${vehicle.make} ${vehicle.model}`}
               onError={() => setImageFailed(true)}
             />

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ArrowRight, ArrowUpRight, CarFront, Gauge } from 'lucide-react';
-import { formatPrice } from '../lib/catalog.js';
+import { formatPrice, MODEL_PHOTOS } from '../lib/catalog.js';
 import { VehicleArtwork } from './VehicleArtwork.jsx';
 
 /**
@@ -10,6 +10,7 @@ import { VehicleArtwork } from './VehicleArtwork.jsx';
 export function VehicleCard({ vehicle, isAdmin, onPurchase, onLearn, onCompare, isCompared, onEdit, onRestock, onDelete, onSelect, busy }) {
   const [imageFailed, setImageFailed] = useState(false);
   const isSoldOut = vehicle.quantity === 0;
+  const photo = vehicle.imageUrl || MODEL_PHOTOS[`${vehicle.make} ${vehicle.model}`];
 
   return (
     <article
@@ -17,10 +18,10 @@ export function VehicleCard({ vehicle, isAdmin, onPurchase, onLearn, onCompare, 
       onClick={() => onSelect?.(vehicle)}
     >
       <div className="relative aspect-[1.47] overflow-hidden bg-[#dae3f1]">
-        {vehicle.imageUrl && !imageFailed ? (
+        {photo && !imageFailed ? (
           <img
             className="h-full w-full object-cover object-center saturate-[.65] hue-rotate-[4deg] transition duration-500 group-hover:scale-105"
-            src={vehicle.imageUrl}
+            src={photo}
             alt={`${vehicle.make} ${vehicle.model}`}
             loading="lazy"
             onError={() => setImageFailed(true)}
