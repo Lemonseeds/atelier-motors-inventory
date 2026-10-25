@@ -16,3 +16,19 @@ it('opens, asks a question, and displays a grounded answer', async () => {
   expect(await screen.findByText('The Aurelia GT S starts at $89,400.')).toBeInTheDocument();
   expect(api).toHaveBeenCalledWith('/assistant', { method: 'POST', body: JSON.stringify({ message: 'How much is the Aurelia GT S?' }) });
 });
+
+it('formats markdown lists and bold text into structured HTML elements', async () => {
+  api.mockResolvedValue({
+    answer: 'Here are our models:\n- **Aurelia GTS** - Starting at **$89,400**\n- **Solenne R8** - Convertible',
+    source: 'groq',
+  });
+  render(<CompanyAssistant/>);
+  await userEvent.click(screen.getByRole('button', { name: 'Open Atelier Assistant' }));
+  await userEvent.type(screen.getByRole('textbox', { name: 'Ask about Atelier Motors' }), 'Which cars?');
+  await userEvent.click(screen.getByRole('button', { name: 'Send question' }));
+  expect(await screen.findByText('Aurelia GTS')).toBeInTheDocument();
+  expect(screen.getByText('$89,400')).toBeInTheDocument();
+  const listItems = screen.getAllByRole('listitem');
+  expect(listItems.length).toBe(2);
+});
+
