@@ -39,16 +39,31 @@ const featureDetails = {
 };
 const storyFor = (vehicle) => stories[`${vehicle.make} ${vehicle.model}`] || { line: 'Made for the way you move.', detail: vehicle.description || 'Discover a distinctive addition to the Atelier Motors collection.', features: ['Thoughtful design', 'A refined interior', 'The joy of the drive'] };
 
+export function getVehiclePhoto(vehicle) {
+  if (vehicle?.imageUrl && vehicle.imageUrl.trim()) return vehicle.imageUrl;
+  if (vehicle?.category === 'SUV') return '/suv.webp';
+  if (vehicle?.category === 'Coupe' || vehicle?.category === 'Convertible') return '/coupe.webp';
+  if (vehicle?.category === 'Electric' || vehicle?.category === 'Sedan') return '/sedan.webp';
+  return '/sedan.webp';
+}
+
 export function VehicleLearnPage({ vehicle, onBack, onDesign }) {
   const story = storyFor(vehicle);
-  const model = modelFor(vehicle);
   const [activeFeature, setActiveFeature] = useState(null);
-  useEffect(() => setActiveFeature(null), [vehicle.id]);
+  const [imageFailed, setImageFailed] = useState(false);
+  const photo = getVehiclePhoto(vehicle);
+
+  useEffect(() => {
+    setActiveFeature(null);
+    setImageFailed(false);
+  }, [vehicle.id]);
+
   const details = featureDetails[`${vehicle.make} ${vehicle.model}`] || [
     'Explore the shape and character of this vehicle in the configurator.',
     'Take a closer look at the cabin and its available finishes.',
     'See how the details come together from every angle.',
   ];
+
   return <main className="vehicle-learn">
     <section className="vehicle-learn-hero">
       <div className="vehicle-learn-copy">
@@ -58,15 +73,25 @@ export function VehicleLearnPage({ vehicle, onBack, onDesign }) {
         <p>{story.line}</p>
         <div className="vehicle-learn-actions"><button type="button" className="vehicle-solid-button" onClick={onDesign}>Design yours <ArrowRight size={18}/></button><span>From {formatPrice(vehicle.price)}</span></div>
       </div>
-      <div className="vehicle-learn-art"><ModelPreview vehicle={vehicle} color="#5d6c7d" view="front" className="w-full h-full" /></div>
+      <div className="vehicle-learn-art">
+        {photo && !imageFailed ? (
+          <img
+            src={photo}
+            alt={`${vehicle.make} ${vehicle.model}`}
+            className="w-full h-full object-contain p-4 sm:p-8 transition duration-700 hover:scale-[1.03]"
+            onError={() => setImageFailed(true)}
+          />
+        ) : (
+          <VehicleArtwork vehicle={vehicle} color="#5d6c7d" view="front" className="w-full h-full" />
+        )}
+      </div>
       <span className="vehicle-learn-number">{String(vehicle.id).padStart(2, '0')} / THE COLLECTION</span>
-      {model && <ModelCredit model={model} className="vehicle-learn-credit"/>}
     </section>
     <section className="vehicle-learn-story shell">
       <div><span className="vehicle-kicker">THE EXPERIENCE</span><h2>Every detail,<br/><em>considered.</em></h2></div>
       <div><p>{story.detail}</p><div className="vehicle-learn-features">{story.features.map((feature, i) => <div key={feature} className={activeFeature === i ? 'is-open' : ''}><button type="button" aria-expanded={activeFeature === i} aria-controls={`vehicle-feature-${vehicle.id}-${i}`} onClick={() => setActiveFeature(activeFeature === i ? null : i)}><span>0{i + 1}</span><strong>{feature}</strong><ArrowRight size={17}/></button><div id={`vehicle-feature-${vehicle.id}-${i}`} className="vehicle-feature-detail" hidden={activeFeature !== i}><p>{details[i]}</p></div></div>)}</div></div>
     </section>
-    <section className="vehicle-learn-gallery shell"><div className="vehicle-learn-gallery-copy"><span className="vehicle-kicker">FORM & FUNCTION</span><h2>A different angle<br/>on what moves you.</h2><p>Explore the shape of your next chapter, then make it yours.</p><button type="button" className="vehicle-text-button" onClick={onDesign}>Explore the configurator <ArrowRight size={18}/></button></div><div className="vehicle-learn-side"><ModelPreview vehicle={vehicle} color="#5d6c7d" view="side" className="w-full h-full"/></div></section>
+    <section className="vehicle-learn-gallery shell"><div className="vehicle-learn-gallery-copy"><span className="vehicle-kicker">FORM & FUNCTION</span><h2>A different angle<br/>on what moves you.</h2><p>Explore the shape of your next chapter, then make it yours.</p><button type="button" className="vehicle-text-button" onClick={onDesign}>Explore the configurator <ArrowRight size={18}/></button></div><div className="vehicle-learn-side"><VehicleArtwork vehicle={vehicle} color="#5d6c7d" view="side" className="w-full h-full"/></div></section>
     <section className="vehicle-learn-end"><span>YOUR NEXT CHAPTER STARTS HERE</span><h2>Make it yours.</h2><button type="button" className="vehicle-solid-button" onClick={onDesign}>Design {vehicle.make} {vehicle.model} <ArrowRight size={18}/></button></section>
   </main>;
 }

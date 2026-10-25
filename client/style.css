@@ -262,9 +262,8 @@ html.lenis, html.lenis body { height: auto; }
 .vehicle-learn-actions span { color: #69757e; font-size: 12px; font-weight: 700; }
 .vehicle-solid-button { display: inline-flex; justify-content: center; align-items: center; gap: 16px; min-height: 48px; padding: 0 24px; border: 0; background: #202b36; color: white; font-size: 12px; font-weight: 800; transition: background .2s, transform .2s; }
 .vehicle-solid-button:hover:not(:disabled) { background: #415364; transform: translateY(-2px); }
-.vehicle-solid-button:disabled { opacity: .5; }
-.vehicle-learn-art { position: relative; height: min(650px, 70vw); min-height: 430px; animation: car-arrive 1s cubic-bezier(.2,.7,.2,1) both; }
-.vehicle-learn-art svg { filter: drop-shadow(0 24px 20px rgb(25 40 50 / .11)); }
+.vehicle-learn-art { position: relative; height: min(650px, 70vw); min-height: 430px; animation: car-arrive 1s cubic-bezier(.2,.7,.2,1) both; display: flex; align-items: center; justify-content: center; }
+.vehicle-learn-art svg, .vehicle-learn-art img { filter: drop-shadow(0 24px 24px rgb(25 40 50 / .13)); }
 .vehicle-learn-number { position: absolute; bottom: 24px; left: 5vw; font-size: 10px; font-weight: 800; letter-spacing: .2em; color: #77828c; }
 @keyframes learn-copy-in { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: none; } }
 @keyframes car-arrive { from { opacity: 0; transform: translateX(100px) scale(.95); } to { opacity: 1; transform: none; } }
@@ -283,7 +282,9 @@ html.lenis, html.lenis body { height: auto; }
 .vehicle-learn-gallery { display: grid; grid-template-columns: 40% 60%; align-items: center; min-height: 480px; background: #e8ebeb; }
 .vehicle-learn-gallery-copy { padding: 60px; }.vehicle-learn-gallery-copy p { max-width: 300px; margin: 20px 0; color: #627079; }
 .vehicle-text-button { display: inline-flex; align-items: center; gap: 12px; padding: 8px 0; border: 0; border-bottom: 1px solid #222e39; background: none; font-weight: 800; font-size: 12px; }
-.vehicle-learn-side { height: 460px; }.vehicle-learn-end { display: flex; flex-direction: column; align-items: center; gap: 25px; padding: 140px 20px; text-align: center; }
+.vehicle-learn-side { height: 460px; display: flex; align-items: center; justify-content: center; }
+.vehicle-learn-side svg { filter: drop-shadow(0 18px 22px rgb(25 40 50 / .12)); }
+.vehicle-learn-end { display: flex; flex-direction: column; align-items: center; gap: 25px; padding: 140px 20px; text-align: center; }
 .vehicle-learn-end > span { font-size: 10px; font-weight: 800; letter-spacing: .25em; }
 
 .vehicle-design { min-height: calc(100vh - 82px); display: grid; grid-template-columns: minmax(0, 64%) minmax(360px, 36%); color: #20252b; background: #fff; }

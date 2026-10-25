@@ -264,5 +264,19 @@ take this image. Also the website is a bit laggy. Cna you do somethig to make it
   - Removed dynamic per-frame `filter: blur(...)` calculation on `.pin-line` during pinned scroll.
   - Replaced heavy `backdrop-blur-xl` (24px radius) and `backdrop-blur-lg` on moving parallax cards and badges in `client/components/EditorialSections.jsx` with lightweight `backdrop-blur-sm` and `bg-white/20`, drastically reducing GPU fill-rate strain and compositor stalls.
 - **Verification:** Ran test suite (36 backend tests, 18 client tests pass) and verified clean production build.
+---
 
+### User → Antigravity (Prompt 17)
+```text
+soo the learn more pages where the whole 3d model is loaded are the webpages that are lagging. Could you just add a picture??
 
+after youre done with that could you please suggest what all i could add?
+```
+
+### Antigravity Actions (Prompt 17)
+- **Eliminated 3D Model Lag on Learn Pages:** Replaced the two heavy `VehicleModel3D` Three.js canvas instances on `VehicleLearnPage` with high-resolution photography (`<img>`) in the hero section and crisp vector SVG profile artwork (`VehicleArtwork`) in the side gallery.
+- **Created `getVehiclePhoto` Helper:** Intelligently maps each vehicle's `imageUrl` with category-matched luxury showroom photography fallbacks (`/coupe.webp`, `/suv.webp`, `/sedan.webp`).
+- **Clean Fallback & Styling:** Added graceful image error handling falling back to SVG vector artwork, accompanied by luxury studio drop-shadows and smooth hover micro-transitions.
+- **Preserved 3D Configurator:** The 3D model with interactive orbital controls, paint swatches, and trim selector remains dedicated to the `VehicleDesignPage` ("Design yours"), where users actively customize builds.
+- **Verified Suite & Build:** All 36 backend tests and 18 client unit tests pass (54/54 passed); production build completes cleanly.
+- **Strategic Suggestions Provided:** Curated high-value feature recommendations across test-drive scheduling, financing calculators, wishlist/spec-sharing, 360° interior tours, order tracking, and voice concierge.
